@@ -1,5 +1,4 @@
 import {useParams} from "react-router-dom";
-import UserNavbar from "../Components/UserNavbar";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
@@ -10,12 +9,23 @@ const MyAnswers = () => {
     let [ans,setAns] = useState([]);
     let [status,setStatus] = useState(true)
     useEffect(()=>{
+        let active = true;
+        setStatus(true);
         axios.get("/get-answers/"+ques_id).then(res=>{
+            if (!active) return;
             console.log(res.data)
             setStatus(false)
             setAns(res.data);
-        })
-    },[])
+        }).catch(() => {
+            if (active) {
+                setStatus(false);
+                setAns([]);
+            }
+        });
+        return () => {
+            active = false;
+        };
+    },[ques_id])
     return (
         <>
             <div className="section page-banner-section user-login-banner">

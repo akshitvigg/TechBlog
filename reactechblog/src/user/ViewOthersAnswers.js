@@ -1,5 +1,5 @@
-import {Link, useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useParams} from "react-router-dom";
+import {useCallback, useEffect, useState} from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
 import TextEditorRender from "../TextEditorRender";
@@ -9,30 +9,17 @@ const ViewOthersAnswers = () => {
     let {qid} = useParams();
     let [answers, setAnswers] = useState([])
     let [status, setStatus] = useState(true);
-    useEffect(() => {
-        view_answers();
-
-    }, [])
-
-    function view_answers() {
-        axios.get("/get-answers/" + qid).then(res => {
+    const viewAnswers = useCallback(() => {
+        return axios.get("/get-answers/" + qid).then(res => {
             console.log(res.data);
             setStatus(false)
             setAnswers(res.data);
         })
-    }
+    }, [qid]);
 
-    function upStatus(answer, question) {
-        // alert("Ans - "+answer+"  :: Question: "+question)
-        axios.post("/update-ans-status", {
-            answer, question
-        }).then(res => {
-            console.log(res.data);
-            if (res.data === "updated") {
-                view_answers();
-            }
-        })
-    }
+    useEffect(() => {
+        viewAnswers();
+    }, [viewAnswers]);
 
     return (
         <>
@@ -86,7 +73,7 @@ const ViewOthersAnswers = () => {
                                             <tbody>
                                             {
                                                 answers.map((value, index) => {
-                                                    let {ans_id, answer, adate, question, status} = value;
+                                                    let {answer, adate, status} = value;
                                                     return (
                                                         <tr key={index} className={"text-center"}>
                                                             <td>{index + 1}</td>

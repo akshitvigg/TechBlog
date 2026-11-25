@@ -6,7 +6,6 @@ import {ErrorMessage} from "@hookform/error-message";
 import {useForm} from "react-hook-form";
 import Swal from "sweetalert2";
 import {Link} from "react-router-dom";
-import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 import TextEditorRender from "../TextEditorRender";
 import ReactLoading from "react-loading";
