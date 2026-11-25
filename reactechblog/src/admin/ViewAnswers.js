@@ -49,36 +49,33 @@ const ViewAnswers = () => {
                                                 <th>Sr. No.</th>
                                                 <th>Answer</th>
                                                 <th>Posted On</th>
-                                                <td></td>
+                                                <th>Visibility</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             {
                                                 answers.map((value, index) => {
-                                                    let {ans_id, answer, adate, status} = value;
+                                                    let {ans_id, answer, adate, status, isAccepted} = value;
                                                     return (
                                                         <tr key={index} className={"text-center"}>
                                                             <td>{index + 1}</td>
                                                             <td><TextEditorRender htmlString={answer}/></td>
                                                             <td>{adate}</td>
                                                             <td>
-                                                                {
-                                                                    status === "pending" ?
-                                                                        <div className={"d-flex gap-2 justify-content-center"}>
-                                                                            <BsPatchCheckFill
-                                                                                title="Accept"
-                                                                                style={{fontSize:"xx-large",color:"green",cursor:"pointer"}}
-                                                                                onClick={() => upStatus(ans_id, "correct")}/>
-                                                                            <BsFillXCircleFill
-                                                                                title="Reject"
-                                                                                style={{fontSize:"xx-large",color:"red",cursor:"pointer"}}
-                                                                                onClick={() => upStatus(ans_id, "rejected")}/>
-                                                                        </div>
-                                                                        : status === "correct" ?
-                                                                        <BsPatchCheckFill style={{fontSize:"xx-large",color:"green"}}/>
-                                                                        :
-                                                                        <BsFillXCircleFill style={{fontSize:"xx-large",color:"red"}}/>
-                                                                }
+                                                                <div className="tb-admin-answer-status">
+                                                                    <span>{status === "rejected" ? "Hidden" : "Visible"}{isAccepted ? " · Accepted by asker" : ""}</span>
+                                                                    {status === "rejected" ? (
+                                                                        <button type="button" className="tb-admin-restore-answer"
+                                                                                onClick={() => upStatus(ans_id, "correct")}>
+                                                                            <BsPatchCheckFill/> Restore
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button type="button" className="tb-admin-hide-answer"
+                                                                                onClick={() => upStatus(ans_id, "rejected")}>
+                                                                            <BsFillXCircleFill/> Hide answer
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     )

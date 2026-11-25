@@ -4,6 +4,7 @@ import axios from "axios";
 import ReactLoading from "react-loading";
 import TextEditorRender from "../TextEditorRender";
 import {BsFillXCircleFill, BsPatchCheckFill} from "react-icons/bs";
+import Swal from "sweetalert2";
 
 const ViewOthersAnswers = () => {
     let {qid} = useParams();
@@ -20,6 +21,22 @@ const ViewOthersAnswers = () => {
     useEffect(() => {
         viewAnswers();
     }, [viewAnswers]);
+
+    async function acceptAnswer(answerId) {
+        try {
+            const response = await axios.post("/accept-answer", {answer: answerId});
+            if (response.data === "accepted") {
+                await viewAnswers();
+                await Swal.fire({icon: "success", title: "Accepted answer saved", timer: 1300, showConfirmButton: false});
+            }
+        } catch (error) {
+            await Swal.fire({
+                icon: "error",
+                title: "Could not accept answer",
+                text: typeof error.response?.data === "string" ? error.response.data : "Please try again."
+            });
+        }
+    }
 
     return (
         <>
@@ -67,28 +84,32 @@ const ViewOthersAnswers = () => {
                                                 <th>Sr. No.</th>
                                                 <th>Answer</th>
                                                 <th>Posted On</th>
-                                                <td></td>
+                                                <th>Status</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             {
                                                 answers.map((value, index) => {
-                                                    let {answer, adate, status} = value;
+                                                    let {ans_id, answer, adate, status, isAccepted, canAccept} = value;
                                                     return (
                                                         <tr key={index} className={"text-center"}>
                                                             <td>{index + 1}</td>
                                                             <td><TextEditorRender htmlString={answer}/></td>
                                                             <td>{adate}</td>
                                                             <td>
-                                                                {
-
-                                                                    status === "pending"  ?
-                                                                        <p></p>
-                                                                        :
-                                                                        status ==="correct" ?
-                                                                        <BsPatchCheckFill style={{fontSize:"xx-large",color:"green"}}/> :
-                                                                            <BsFillXCircleFill style={{fontSize:"xx-large",color:"red"}}/>
-                                                                }
+                                                                {isAccepted ? (
+                                                                    <span className="tb-answer-accepted"><BsPatchCheckFill/> Accepted</span>
+                                                                ) : status === "rejected" ? (
+                                                                    <span className="tb-answer-rejected"><BsFillXCircleFill/> Hidden by admin</span>
+                                                                ) : (
+                                                                    <span className="tb-answer-visible">Visible</span>
+                                                                )}
+                                                                {canAccept && status !== "rejected" && !isAccepted && (
+                                                                    <button type="button" className="tb-accept-answer"
+                                                                            onClick={() => acceptAnswer(ans_id)}>
+                                                                        Accept answer
+                                                                    </button>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     )

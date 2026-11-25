@@ -1,11 +1,40 @@
-import {useState} from "react";
-import {Link} from "react-router-dom";
+import {useEffect, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 import {FaBars, FaTimes} from "react-icons/fa";
+import axios from "axios";
+import Swal from "sweetalert2";
 import ThemeToggle from "./ThemeToggle";
 
 const PublicNavbar = () => {
+    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [signedIn, setSignedIn] = useState(false);
     const closeMenu = () => setMenuOpen(false);
+
+    useEffect(() => {
+        axios.get("/user-check-authentication")
+            .then(response => setSignedIn(response.data !== "fails"))
+            .catch(() => setSignedIn(false));
+    }, []);
+
+    async function logout() {
+        const confirmed = await Swal.fire({
+            title: "Log out?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Log out",
+            cancelButtonText: "Stay here"
+        });
+        if (!confirmed.isConfirmed) return;
+        try {
+            await axios.post("/user-logout");
+            setSignedIn(false);
+            closeMenu();
+            navigate("/");
+        } catch {
+            Swal.fire({icon: "error", title: "Could not log out", text: "Please try again."});
+        }
+    }
 
     return (
         <header className="tb-header">
@@ -28,7 +57,10 @@ const PublicNavbar = () => {
                     <Link to="/" onClick={closeMenu}>Home</Link>
                     <Link to="/about-us" onClick={closeMenu}>About</Link>
                     <Link to="/blogs" onClick={closeMenu}>Explore blogs</Link>
-                    <Link className="tb-nav-cta" to="/user-LoginRegister" onClick={closeMenu}>Sign in / Join</Link>
+                    <Link className="tb-nav-cta" to={signedIn ? "/user/home" : "/user-LoginRegister"} onClick={closeMenu}>
+                        {signedIn ? "Dashboard" : "Sign in / Join"}
+                    </Link>
+                    {signedIn && <button className="tb-nav-logout" type="button" onClick={logout}>Log out</button>}
                     <ThemeToggle/>
                 </nav>
             </div>

@@ -24,7 +24,7 @@ const About = () => (
                 <div className="tb-about-section-heading">
                     <span className="tb-about-eyebrow">WHAT YOU CAN DO HERE</span>
                     <h2>A small platform with a clear purpose.</h2>
-                    <p>Read, ask, and contribute—with moderation helping keep shared answers useful.</p>
+                    <p>Read, ask, and contribute. Question owners can highlight the answer that helped them most.</p>
                 </div>
                 <div className="tb-about-feature-grid">
                     <article className="tb-about-feature">
@@ -40,7 +40,7 @@ const About = () => (
                     <article className="tb-about-feature">
                         <span className="tb-about-icon"><FaUserShield/></span>
                         <h3>Thoughtful moderation</h3>
-                        <p>Answers are reviewed by admins before they are shown publicly.</p>
+                        <p>Answers appear in the discussion, and the person who asked can mark the most helpful one.</p>
                     </article>
                 </div>
             </section>

@@ -103,24 +103,24 @@ const UserHome = () => {
                                         </div>
                                         :
                                         questions.length === 0 ?
-                                            <div className={"alert alert-info mt-4"}>No questions from other users yet.</div>
+                                            <div className={"alert alert-info mt-4"}>No questions yet. Start the conversation by asking the first one.</div>
                                             :
                                             questions.map((value, index) => {
-                                                let {qdate, question, ques_id, cat_name} = value;
+                                        let {qdate, question, ques_id, cat_name, isOwn, user: author} = value;
                                                 return (
                                                     <article key={ques_id} className="tb-question-card">
                                                         <div className="tb-question-meta">
                                                             <span className="tb-category-chip">{cat_name || "Question"}</span>
-                                                            <span>Posted {qdate}</span>
+                                                    <span>{isOwn ? "Your question" : `Asked by ${author || "a community member"}`} · {qdate}</span>
                                                         </div>
                                                         <div className="tb-question-content">
                                                             <TextEditorRender htmlString={question}/>
                                                         </div>
                                                         <div className="tb-question-actions">
-                                                            <Button type="button" className="btn btn-4"
+                                                            {!isOwn && <Button type="button" className="btn btn-4"
                                                                     onClick={() => handleShow(ques_id)}>
                                                                 <FaPlusCircle/> Add an answer
-                                                            </Button>
+                                                            </Button>}
                                                             <Link to={`/user/view-others-answers/${ques_id}`} className="btn btn-3">
                                                                 <FaRegEye/> View answers
                                                             </Link>

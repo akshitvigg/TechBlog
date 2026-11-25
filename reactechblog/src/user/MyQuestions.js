@@ -1,27 +1,13 @@
 import {useEffect, useState} from "react";
 import axios from "axios";
-import {FaPlus, FaRegEye, FaTrashAlt} from "react-icons/fa";
-import {Button, Modal} from "react-bootstrap";
-import {ErrorMessage} from "@hookform/error-message";
-import {useForm} from "react-hook-form";
+import {FaRegEye, FaTrashAlt} from "react-icons/fa";
 import Swal from "sweetalert2";
 import {Link} from "react-router-dom";
-import 'react-quill/dist/quill.snow.css';
 import TextEditorRender from "../TextEditorRender";
 import ReactLoading from "react-loading";
 const MyQuestions = () => {
-    let {register, handleSubmit, reset, formState: {errors}} = useForm()
-    let [qid, setQid] = useState(0);
     let [questions, setQuestions] = useState([])
     let [status,setStatus] = useState(true)
-    const [show, setShow] = useState(false);
-
-    const handleClose = () => setShow(false);
-    const handleShow = (quesid) => {
-        setShow(true)
-        setQid(quesid)
-
-    };
     useEffect(() => {
         view_questions();
     }, [])
@@ -47,25 +33,6 @@ const MyQuestions = () => {
         }))
     }
 
-    let addAnswer = (data) => {
-        console.log(data)
-        let {qid,answer} = data;
-            answer =`<pre>${answer}</pre>`
-        axios.post("/add-answers", {
-            qid,answer
-        }).then(res => {
-            console.log(res.data);
-            if (res.data === "inserted") {
-                reset();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Answer added successfully',
-                    showConfirmButton:false,
-                    timer:1500
-                })
-            }
-        })
-    }
     return (
         <>
             <div className="section page-banner-section user-login-banner">
@@ -116,7 +83,7 @@ const MyQuestions = () => {
                                                         <th>Posted on</th>
                                                         <th>Category</th>
                                                         <th>Delete</th>
-                                                        <th colSpan={"2"}>Answers</th>
+                                                        <th>Answers</th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
@@ -135,11 +102,6 @@ const MyQuestions = () => {
                                                                                 onClick={() => del_question(ques_id)}>
                                                                             <FaTrashAlt/>
                                                                         </button>
-                                                                    </td>
-                                                                    <td>
-                                                                        <button type={"button"} className={"btn btn-4"}
-                                                                                onClick={() => handleShow(ques_id)}><FaPlus
-                                                                            style={{color: "green"}}/></button>
                                                                     </td>
                                                                     <td>
                                                                         <Link to={"/user/my-answers/" + ques_id}
@@ -161,40 +123,6 @@ const MyQuestions = () => {
                     </div>
                 </div>
             </div>
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title className={"text-dark"}>Add New Answer</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <form id={"form"} onSubmit={handleSubmit(addAnswer)}>
-                        <div className={"row mb-4"}>
-                            <div className={"col-lg-12"}>
-                                <div className="single-form">
-                                    <input type={"hidden"}  {...register('qid')} value={qid}/>
-                                    <label htmlFor={"category"} className={"text-dark"}>Answer</label>
-                                    <textarea rows={"5"} {...register('answer', {required: "Answer is required"})}/>
-                                    <ErrorMessage name={"answer"} errors={errors}
-                                                  render={({message}) => <p
-                                                      className={"text-danger"}>{message}</p>}></ErrorMessage>
-
-                                </div>
-                            </div>
-                            <div className={"col-lg-12 mt-3"}>
-                                <div className="single-form">
-                                    <button type={"submit"} className={"btn btn-1"}>Submit</button>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
         </>
     )
 }

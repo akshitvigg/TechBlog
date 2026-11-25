@@ -134,9 +134,11 @@ code {
 .btn-1:hover,
 .btn-3:hover,
 .btn-4:hover,
+.btn-2:hover,
+.btn-primary:hover,
 .tb-primary-button:hover {
-  color: var(--on-accent);
-  background: var(--accent);
+  color: var(--on-accent) !important;
+  background: var(--accent) !important;
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--edge);
 }
@@ -2186,6 +2188,79 @@ pre {
 .tb-comment-text {
   color: var(--text);
   overflow-wrap: anywhere;
+}
+
+.tb-answer-accepted,
+.tb-answer-rejected,
+.tb-answer-visible {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.tb-answer-accepted {
+  color: #218451;
+}
+
+.tb-answer-rejected {
+  color: #c44949;
+}
+
+.tb-accept-answer,
+.tb-admin-hide-answer,
+.tb-admin-restore-answer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 8px 4px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--surface-2);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tb-accept-answer {
+  border-color: #218451;
+  color: #218451;
+  background: transparent;
+}
+
+.tb-admin-hide-answer {
+  color: #c44949;
+}
+
+.tb-admin-restore-answer {
+  color: #218451;
+}
+
+.tb-admin-answer-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 130px;
+}
+
+.page-banner-section + .login-register-section,
+.page-banner-section + .faq {
+  padding-top: 24px;
+  padding-top: clamp(42px, 6vw, 68px) !important;
+}
+
+.tb-admin-answer-status button:hover,
+.tb-accept-answer:hover {
+  border-color: var(--link);
+  color: var(--link);
+  background: var(--surface-2);
 }
 
 .tb-signin-note {

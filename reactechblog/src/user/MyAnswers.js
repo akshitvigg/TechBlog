@@ -3,6 +3,7 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
 import TextEditorRender from "../TextEditorRender";
+import Swal from "sweetalert2";
 
 const MyAnswers = () => {
     let {ques_id} = useParams();
@@ -26,6 +27,24 @@ const MyAnswers = () => {
             active = false;
         };
     },[ques_id])
+
+    async function acceptAnswer(answerId) {
+        try {
+            const response = await axios.post("/accept-answer", {answer: answerId});
+            if (response.data === "accepted") {
+                const refreshed = await axios.get("/get-answers/" + ques_id);
+                setAns(refreshed.data);
+                await Swal.fire({icon: "success", title: "Accepted answer saved", timer: 1300, showConfirmButton: false});
+            }
+        } catch (error) {
+            await Swal.fire({
+                icon: "error",
+                title: "Could not accept answer",
+                text: typeof error.response?.data === "string" ? error.response.data : "Please try again."
+            });
+        }
+    }
+
     return (
         <>
             <div className="section page-banner-section user-login-banner">
@@ -76,18 +95,29 @@ const MyAnswers = () => {
                                                         <th>Answer</th>
                                                         <th>Status</th>
                                                         <th>Posted On</th>
+                                                        <th>Accepted answer</th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
                                                     {
                                                         ans.map((value,index)=>{
-                                                            let {adate,answer,status} = value;
+                                                            let {adate,answer,status,ans_id,isAccepted,canAccept} = value;
                                                             return(
                                                                 <tr key={index} className={"text-center"}>
                                                                     <td>{index+1}</td>
                                                                     <td><TextEditorRender htmlString={answer}/></td>
-                                                                    <td>{status}</td>
+                                                                    <td>{status === "rejected" ? "Hidden by admin" : "Visible"}</td>
                                                                     <td>{adate}</td>
+                                                                    <td>
+                                                                        {isAccepted ? (
+                                                                            <span className="tb-answer-accepted">Accepted</span>
+                                                                        ) : canAccept && status !== "rejected" ? (
+                                                                            <button type="button" className="tb-accept-answer"
+                                                                                    onClick={() => acceptAnswer(ans_id)}>
+                                                                                Accept answer
+                                                                            </button>
+                                                                        ) : "—"}
+                                                                    </td>
                                                                 </tr>
                                                             )
                                                         })

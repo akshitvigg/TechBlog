@@ -383,7 +383,7 @@ router.get("/admin-get-questions", requireAdmin, async (req, res) => {
 
 async function getQuestions(req, res) {
     try {
-        const questions = await Question.find({ user: { $ne: req.session.userSession } })
+        const questions = await Question.find()
             .sort({ _id: -1 })
             .populate('category')
             .lean();
@@ -394,6 +394,7 @@ async function getQuestions(req, res) {
             category:  q.category ? q.category._id : null,
             cat_name:  q.category ? q.category.cat_name : '',
             user:      names[q.user] || "TechBlog member",
+            isOwn:     Boolean(req.session.userSession && q.user === req.session.userSession),
             ques_date: q.ques_date,
             qdate:     fmtDate(q.ques_date),
             quesDate:  fmtOrdinal(q.ques_date)
@@ -425,9 +426,12 @@ router.post("/add-answers", requireUser, async (req, res) => {
     try {
         let { qid, answer } = req.body;
         answer = cleanHtml(answer);
-        if (!answer || !isValidId(qid) || !(await Question.exists({ _id: qid }))) {
+        if (!answer || !isValidId(qid)) {
             return res.status(400).send("Please enter an answer for a valid question");
         }
+        const question = await Question.findById(qid).select('user');
+        if (!question) return res.status(404).send("question not found");
+        if (question.user === req.session.userSession) return res.status(403).send("you cannot answer your own question");
         await Answer.create({ answer, question: qid, user: req.session.userSession, ans_date: new Date(), status: 'pending' });
         res.send("inserted");
     } catch (err) { console.error(err); res.status(500).send("server error"); }
@@ -441,7 +445,7 @@ async function getAnswers(req, res, questionId) {
         const canReview = Boolean(req.session.adminSession) ||
             (Boolean(req.session.userSession) && question.user === req.session.userSession);
         const query = { question: questionId };
-        if (!canReview) query.status = 'correct';
+        if (!canReview) query.status = { $ne: 'rejected' };
         const answers = await Answer.find(query).lean();
         const names = await getDisplayNames(answers.map(answer => answer.user));
         res.send(answers.map(a => ({
@@ -451,7 +455,9 @@ async function getAnswers(req, res, questionId) {
             user:     names[a.user] || "TechBlog member",
             ans_date: a.ans_date,
             adate:    fmtDate(a.ans_date),
-            status:   a.status
+            status:   a.status,
+            isAccepted: Boolean(a.isAccepted),
+            canAccept: Boolean(req.session.userSession && question.user === req.session.userSession)
         })));
     } catch (err) { console.error("Could not load answers:", err); res.status(500).send("server error"); }
 }
@@ -465,8 +471,31 @@ router.post("/update-ans-status", requireAdmin, async (req, res) => {
         const allowed = ['correct', 'rejected'];
         if (!allowed.includes(status)) return res.send("invalid status");
         if (!isValidId(answer)) return res.status(400).send("invalid answer id");
-        await Answer.findByIdAndUpdate(answer, { status });
+        const update = { status };
+        if (status === 'rejected') update.isAccepted = false;
+        await Answer.findByIdAndUpdate(answer, update);
         res.send("updated");
+    } catch (err) { console.error(err); res.status(500).send("server error"); }
+});
+
+router.post("/accept-answer", requireUser, async (req, res) => {
+    try {
+        const { answer } = req.body;
+        if (!isValidId(answer)) return res.status(400).send("invalid answer id");
+        const selectedAnswer = await Answer.findById(answer).select('question status');
+        if (!selectedAnswer || selectedAnswer.status === 'rejected') {
+            return res.status(404).send("answer not found");
+        }
+        const question = await Question.findOne({
+            _id: selectedAnswer.question,
+            user: req.session.userSession
+        }).select('_id');
+        if (!question) return res.status(403).send("only the question owner can accept an answer");
+
+        await Answer.updateMany({ question: question._id }, { isAccepted: false });
+        selectedAnswer.isAccepted = true;
+        await selectedAnswer.save();
+        res.send("accepted");
     } catch (err) { console.error(err); res.status(500).send("server error"); }
 });
 
@@ -481,6 +510,26 @@ router.post("/add-blog", requireUser, async (req, res) => {
         }
         await Blog.create({ message, user: req.session.userSession, blog_dt: new Date(), category, title });
         res.send("inserted");
+    } catch (err) { console.error(err); res.status(500).send("server error"); }
+});
+
+router.put("/update-blog/:blogId", requireUser, async (req, res) => {
+    try {
+        const { blogId } = req.params;
+        let { category, message, title } = req.body;
+        title = typeof title === "string" ? title.trim() : "";
+        message = cleanHtml(message);
+        if (!isValidId(blogId)) return res.status(400).send("invalid blog id");
+        if (!title || !message || !isValidId(category) || !(await Category.exists({ _id: category }))) {
+            return res.status(400).send("Please enter a title, content, and valid category");
+        }
+        const blog = await Blog.findOneAndUpdate(
+            { _id: blogId, user: req.session.userSession },
+            { title, message, category },
+            { new: true, runValidators: true }
+        );
+        if (!blog) return res.status(404).send("blog not found");
+        res.send("updated");
     } catch (err) { console.error(err); res.status(500).send("server error"); }
 });
 

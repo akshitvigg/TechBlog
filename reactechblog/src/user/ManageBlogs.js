@@ -1,4 +1,4 @@
-import {FaPlus, FaTrash} from "react-icons/fa";
+import {FaEdit, FaPlus, FaTrash} from "react-icons/fa";
 import {Button, Modal} from "react-bootstrap";
 import {ErrorMessage} from "@hookform/error-message";
 import {useForm} from "react-hook-form";
@@ -13,9 +13,14 @@ const ManageBlogs = () => {
     let [category, setCategoey] = useState([]);
     let [blogs, setBlogs] = useState([]);
     let [status, setStatus] = useState(true)
+    const [editingBlogId, setEditingBlogId] = useState(null);
     const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-    let {register, handleSubmit, reset, formState: {errors}} = useForm()
+    const {register, handleSubmit, reset, formState: {errors, isSubmitting}} = useForm()
+    const handleShow = () => {
+        setEditingBlogId(null);
+        reset({category: "", title: "", description: ""});
+        setShow(true);
+    };
     useEffect(() => {
         axios.get("/view-categories").then(res => {
             console.log(res.data);
@@ -24,22 +29,50 @@ const ManageBlogs = () => {
         viewBlogs();
     }, [])
 
-    function blogAction(data) {
-        console.log(data);
-        let {category, description, title} = data;
-        let new_descp = `<pre>${description}</pre>`;
-        axios.post("/add-blog", {
-            category: category, message: new_descp, title: title
-        }).then(res => {
-            // console.log(res.data);
-            if (res.data === "inserted") {
-                reset();
-                Swal.fire({
-                    icon: 'success', title: 'Blog added successfully', showConfirmButton: false, timer: 1500
-                })
-                viewBlogs();
+    function editBlog(blog) {
+        const content = document.createElement("div");
+        content.innerHTML = blog.message || "";
+        setEditingBlogId(blog.blog_id);
+        reset({
+            category: blog.category || "",
+            title: blog.title || "",
+            description: content.textContent || ""
+        });
+        setShow(true);
+    }
+
+    async function blogAction(data) {
+        const payload = {
+            category: data.category,
+            message: `<pre>${data.description}</pre>`,
+            title: data.title
+        };
+        try {
+            const response = editingBlogId
+                ? await axios.put(`/update-blog/${editingBlogId}`, payload)
+                : await axios.post("/add-blog", payload);
+            const expected = editingBlogId ? "updated" : "inserted";
+            if (response.data !== expected) {
+                await Swal.fire({icon: "error", title: "Could not save blog", text: "Please review the details and try again."});
+                return;
             }
-        })
+            reset();
+            setShow(false);
+            setEditingBlogId(null);
+            await Swal.fire({
+                icon: "success",
+                title: editingBlogId ? "Blog updated" : "Blog added",
+                showConfirmButton: false,
+                timer: 1200
+            });
+            viewBlogs();
+        } catch (error) {
+            await Swal.fire({
+                icon: "error",
+                title: editingBlogId ? "Could not update blog" : "Could not add blog",
+                text: typeof error.response?.data === "string" ? error.response.data : "Please check your connection and try again."
+            });
+        }
     }
 
     function viewBlogs() {
@@ -120,7 +153,7 @@ const ManageBlogs = () => {
                                                     <th>Description</th>
                                                     <th>Posted On</th>
                                                     <th>Category</th>
-                                                    <th>Action</th>
+                                                    <th>Actions</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
@@ -135,6 +168,10 @@ const ManageBlogs = () => {
                                                             <td>{bdt}</td>
                                                             <td>{cat_name}</td>
                                                             <td>
+                                                                <button type={"button"} className={"btn btn-3 me-2"}
+                                                                        aria-label={`Edit ${title}`}
+                                                                        onClick={() => editBlog(value)}><FaEdit/>
+                                                                </button>
                                                                 <button type={"button"} className={"btn btn-3"}
                                                                         onClick={() => delBlog(blog_id)}><FaTrash/>
                                                                 </button>
@@ -156,7 +193,7 @@ const ManageBlogs = () => {
         </div>
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title className={"text-dark"}>Add New Blog</Modal.Title>
+                <Modal.Title className={"text-dark"}>{editingBlogId ? "Edit Blog" : "Add New Blog"}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <form onSubmit={handleSubmit(blogAction)}>
@@ -193,7 +230,9 @@ const ManageBlogs = () => {
                                               className={"text-danger"}>{message}</p>}></ErrorMessage>
                         </div>
                         <div className={"col-lg-12"}>
-                            <button type={"submit"} className={"btn btn-2"}>Submit</button>
+                            <button type={"submit"} className={"btn btn-2"} disabled={isSubmitting}>
+                                {isSubmitting ? "Saving..." : editingBlogId ? "Save changes" : "Publish blog"}
+                            </button>
                         </div>
                     </div>
                 </form>

@@ -15,9 +15,14 @@ import Footer from "./Footer";
 const HomePage = () => {
   const [blogs, setBlogs] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [signedIn, setSignedIn] = useState(false);
 
   // Both lists are optional: if the server is down or empty, those sections simply hide.
   useEffect(() => {
+    axios
+      .get("/user-check-authentication")
+      .then((res) => setSignedIn(res.data !== "fails"))
+      .catch(() => setSignedIn(false));
     axios
       .get("/fetch-blogs")
       .then((res) => Array.isArray(res.data) && setBlogs(res.data.slice(0, 3)))
@@ -52,16 +57,15 @@ const HomePage = () => {
                 and learn from a community of technology enthusiasts.
               </p>
               <div className="tb-hero-actions">
-                <Link className="tb-primary-button" to="/user-LoginRegister">
-                  Join the community
+                <Link className="tb-primary-button" to={signedIn ? "/user/home" : "/user-LoginRegister"}>
+                  {signedIn ? "Go to your dashboard" : "Join the community"}
                 </Link>
                 <Link className="tb-secondary-button" to="/blogs">
                   Explore articles
                 </Link>
               </div>
               <div className="tb-hero-note">
-                <FaShieldAlt /> Helpful knowledge, with answers reviewed by
-                admins
+                <FaShieldAlt /> Question owners can choose the most helpful answer
               </div>
             </div>
             {latest && (
@@ -78,7 +82,7 @@ const HomePage = () => {
                 <div className="tb-hero-card-foot">
                   <span>{latest.quesDate}</span>
                   <span>
-                    <FaShieldAlt /> Answers reviewed
+                    <FaShieldAlt /> Asker can accept an answer
                   </span>
                 </div>
               </aside>
