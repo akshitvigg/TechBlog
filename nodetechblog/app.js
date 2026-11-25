@@ -23,6 +23,26 @@ if (
     "MONGODB_URI, SESSION_SECRET, and FRONTEND_URL must be configured in production",
   );
 }
+
+const frontendOriginValues = (
+  process.env.FRONTEND_URL || (isProduction ? "" : "http://localhost:3000")
+)
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+if (frontendOriginValues.includes("*")) {
+  throw new Error("FRONTEND_URL must contain explicit origins, not '*'");
+}
+
+const configuredFrontendOrigins = frontendOriginValues.map((value) => {
+  try {
+    return new URL(value).origin;
+  } catch {
+    throw new Error(`Invalid frontend origin in FRONTEND_URL: ${value}`);
+  }
+});
+
 if (isProduction) {
   app.set("trust proxy", 1);
 }
@@ -37,7 +57,14 @@ app.use(express.urlencoded({ extended: false, limit: "5mb" }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      callback(null, !origin || configuredFrontendOrigins.includes(origin));
+    },
+    credentials: true,
+  }),
+);
 
 app.use(
   session({
