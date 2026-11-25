@@ -78,47 +78,39 @@ const ViewOthersAnswers = () => {
                                     <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading>
                                     :
                                     answers.length > 0 ?
-                                        <table className={"table"}>
-                                            <thead>
-                                            <tr className={"text-center"}>
-                                                <th>Sr. No.</th>
-                                                <th>Answer</th>
-                                                <th>Posted On</th>
-                                                <th>Status</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {
-                                                answers.map((value, index) => {
-                                                    let {ans_id, answer, adate, status, isAccepted, canAccept} = value;
-                                                    return (
-                                                        <tr key={index} className={"text-center"}>
-                                                            <td>{index + 1}</td>
-                                                            <td><TextEditorRender htmlString={answer}/></td>
-                                                            <td>{adate}</td>
-                                                            <td>
-                                                                {isAccepted ? (
-                                                                    <span className="tb-answer-accepted"><BsPatchCheckFill/> Accepted</span>
-                                                                ) : status === "rejected" ? (
-                                                                    <span className="tb-answer-rejected"><BsFillXCircleFill/> Hidden by admin</span>
-                                                                ) : (
-                                                                    <span className="tb-answer-visible">Visible</span>
-                                                                )}
-                                                                {canAccept && status !== "rejected" && !isAccepted && (
-                                                                    <button type="button" className="tb-accept-answer"
-                                                                            onClick={() => acceptAnswer(ans_id)}>
-                                                                        Accept answer
-                                                                    </button>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })
-                                            }
-                                            </tbody>
-                                        </table>
+                                        <div className="tb-answer-list">
+                                            {answers.map(({ans_id, answer, adate, status, isAccepted, canAccept, user}) => (
+                                                <article className={`tb-answer-card${isAccepted ? " is-accepted" : ""}`} key={ans_id}>
+                                                    <div className="tb-answer-card-meta">
+                                                        <span>{user || "Community member"}</span>
+                                                        <time>{adate}</time>
+                                                    </div>
+                                                    <div className="tb-answer-card-content">
+                                                        <TextEditorRender htmlString={answer}/>
+                                                    </div>
+                                                    <div className="tb-answer-card-foot">
+                                                        {isAccepted ? (
+                                                            <span className="tb-answer-accepted"><BsPatchCheckFill/> Accepted answer</span>
+                                                        ) : status === "rejected" ? (
+                                                            <span className="tb-answer-rejected"><BsFillXCircleFill/> Hidden by admin</span>
+                                                        ) : (
+                                                            <span className="tb-answer-visible">Community answer</span>
+                                                        )}
+                                                        {canAccept && status !== "rejected" && !isAccepted && (
+                                                            <button type="button" className="tb-accept-answer"
+                                                                    onClick={() => acceptAnswer(ans_id)}>
+                                                                Accept answer
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </article>
+                                            ))}
+                                        </div>
                                         :
-                                        <div className={"alert alert-danger"}>No data found</div>
+                                        <div className="tb-empty-state">
+                                            <h4>No answers yet</h4>
+                                            <p>When someone shares an answer, it will appear here.</p>
+                                        </div>
                             }
                         </div>
                     </div>

@@ -312,6 +312,14 @@ router.get('/user-check-authentication', (req, res) => {
     req.session.userSession !== undefined ? res.send(req.session.userSession) : res.send("fails");
 });
 
+router.get('/user-profile', requireUser, async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.session.userSession }).select('fullname').lean();
+        if (!user) return res.status(404).send("user not found");
+        res.send({ fullname: user.fullname });
+    } catch (err) { console.error(err); res.status(500).send("server error"); }
+});
+
 router.post("/user-logout", (req, res, next) => {
     req.session.destroy(err => {
         if (err) return next(err);
@@ -356,6 +364,16 @@ router.delete("/del-question/:qid", requireUser, async (req, res) => {
             _id: req.params.qid,
             user: req.session.userSession
         });
+        if (!question) return res.status(404).send("question not found");
+        await Answer.deleteMany({ question: question._id });
+        res.send("deleted");
+    } catch (err) { console.error(err); res.status(500).send("server error"); }
+});
+
+router.delete("/admin/del-question/:qid", requireAdmin, async (req, res) => {
+    try {
+        if (!isValidId(req.params.qid)) return res.status(400).send("invalid question id");
+        const question = await Question.findByIdAndDelete(req.params.qid);
         if (!question) return res.status(404).send("question not found");
         await Answer.deleteMany({ question: question._id });
         res.send("deleted");

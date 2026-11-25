@@ -3,7 +3,7 @@ import axios from "axios";
 import {FaRegEye, FaTrashAlt} from "react-icons/fa";
 import Swal from "sweetalert2";
 import {Link} from "react-router-dom";
-import TextEditorRender from "../TextEditorRender";
+import {excerpt} from "../Components/textUtils";
 import ReactLoading from "react-loading";
 const MyQuestions = () => {
     let [questions, setQuestions] = useState([])
@@ -13,24 +13,36 @@ const MyQuestions = () => {
     }, [])
 
     function view_questions() {
-        axios.get("/view-my-questions").then(res => {
+        return axios.get("/view-my-questions").then(res => {
             // console.log(res.data);
             setQuestions(res.data)
             setStatus(false)
         })
     }
 
-    function del_question(qid) {
-        // alert(qid)
-        axios.delete("/del-question/" + qid).then(res => {
-            if (res.data === "deleted") {
-                view_questions()
+    async function del_question(qid) {
+        const result = await Swal.fire({
+            title: "Delete this question?",
+            text: "Its answers will also be deleted. This cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Delete question",
+            confirmButtonColor: "#c44949"
+        });
+        if (!result.isConfirmed) return;
+        try {
+            const response = await axios.delete("/del-question/" + qid);
+            if (response.data === "deleted") {
+                await view_questions();
+                Swal.fire({icon: "success", title: "Question deleted", timer: 1200, showConfirmButton: false});
             }
-        }).catch(error => Swal.fire({
-            icon: "error",
-            title: "Could not delete question",
-            text: error.response?.data || "Please try again."
-        }))
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Could not delete question",
+                text: error.response?.data || "Please try again."
+            });
+        }
     }
 
     return (
@@ -75,47 +87,31 @@ const MyQuestions = () => {
                                         status ?
                                             <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading> :
                                             questions.length > 0 ?
-                                                <table className={"table"}>
-                                                    <thead>
-                                                    <tr className={"text-center"}>
-                                                        <th>Sr. No.</th>
-                                                        <th>Question</th>
-                                                        <th>Posted on</th>
-                                                        <th>Category</th>
-                                                        <th>Delete</th>
-                                                        <th>Answers</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {
-                                                        questions.map((value, index) => {
-                                                            let {ques_id, question, cat_name, qdate} = value;
-
-                                                            return (
-                                                                <tr key={index} className={"text-center"}>
-                                                                    <td>{index + 1}</td>
-                                                                    <td><TextEditorRender htmlString={question}/></td>
-                                                                    <td>{qdate}</td>
-                                                                    <td>{cat_name}</td>
-                                                                    <td>
-                                                                        <button type={"button"} className={"btn btn-3"}
-                                                                                onClick={() => del_question(ques_id)}>
-                                                                            <FaTrashAlt/>
-                                                                        </button>
-                                                                    </td>
-                                                                    <td>
-                                                                        <Link to={"/user/my-answers/" + ques_id}
-                                                                              className={"btn btn-3"}><FaRegEye
-                                                                            style={{color: "white"}}/></Link>
-                                                                    </td>
-                                                                </tr>
-                                                            )
-                                                        })
-                                                    }
-                                                    </tbody>
-                                                </table>
-                                                :
-                                                <div className={"alert alert-danger"}>No data found</div>
+                                                <div className="tb-my-question-list">
+                                                    {questions.map(({ques_id, question, cat_name, qdate}) => (
+                                                        <article className="tb-my-question-card" key={ques_id}>
+                                                            <div className="tb-my-question-meta">
+                                                                <span className="tb-category-chip">{cat_name || "Question"}</span>
+                                                                <time>{qdate}</time>
+                                                            </div>
+                                                            <p>{excerpt(question, 240)}</p>
+                                                            <div className="tb-my-question-actions">
+                                                                <Link to={"/user/my-answers/" + ques_id} className="tb-my-question-link">
+                                                                    <FaRegEye/> View answers
+                                                                </Link>
+                                                                <button type="button" className="tb-my-question-delete"
+                                                                        onClick={() => del_question(ques_id)}>
+                                                                    <FaTrashAlt/> Delete question
+                                                                </button>
+                                                            </div>
+                                                        </article>
+                                                    ))}
+                                                </div>
+                                                        :
+                                                        <div className="tb-empty-state">
+                                                            <h4>No questions yet</h4>
+                                                            <p>Questions you post will be collected here.</p>
+                                                        </div>
                                     }
                                 </div>
                             </div>

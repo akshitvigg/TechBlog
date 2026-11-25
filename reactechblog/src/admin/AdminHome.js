@@ -2,6 +2,8 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import {Link} from "react-router-dom";
 import TextEditorRender from "../TextEditorRender";
+import {FaTrashAlt} from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const AdminHome = () => {
     let [questions, setQuestions] = useState([])
@@ -12,6 +14,32 @@ const AdminHome = () => {
         })
         axios.get("/admin-stats").then(res => setStats(res.data))
     }, [])
+
+    async function deleteQuestion(questionId) {
+        const result = await Swal.fire({
+            title: "Delete this question?",
+            text: "This also permanently deletes its answers.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Delete question",
+            confirmButtonColor: "#c44949"
+        });
+        if (!result.isConfirmed) return;
+        try {
+            const response = await axios.delete(`/admin/del-question/${questionId}`);
+            if (response.data === "deleted") {
+                setQuestions(current => current.filter(question => question.ques_id !== questionId));
+                setStats(current => current ? {...current, questions: Math.max(0, current.questions - 1)} : current);
+                Swal.fire({icon: "success", title: "Question removed", timer: 1200, showConfirmButton: false});
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Could not delete question",
+                text: error.response?.data || "Please try again."
+            });
+        }
+    }
 
     return (
         <>
@@ -43,7 +71,13 @@ const AdminHome = () => {
                                     <time>{quesDate}</time>
                                 </div>
                                 <div className="tb-admin-question-content"><TextEditorRender htmlString={question}/></div>
-                                <Link to={`/admin/view-answers/${ques_id}`} className="tb-admin-review-link">Review answers <span aria-hidden="true">→</span></Link>
+                                <div className="tb-admin-question-actions">
+                                    <Link to={`/admin/view-answers/${ques_id}`} className="tb-admin-review-link">Review answers <span aria-hidden="true">→</span></Link>
+                                    <button type="button" className="tb-my-question-delete"
+                                            onClick={() => deleteQuestion(ques_id)}>
+                                        <FaTrashAlt/> Delete question
+                                    </button>
+                                </div>
                             </article>
                         )) : (
                             <div className="tb-empty-state">

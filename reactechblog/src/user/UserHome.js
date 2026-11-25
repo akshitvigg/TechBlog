@@ -17,9 +17,8 @@ const UserHome = () => {
     let {register, handleSubmit, reset, formState: {errors}} = useForm()
 
     useEffect(() => {
-        axios.get("/user-check-authentication").then(res => {
-            // console.log(res.data);
-            setUser(res.data);
+        axios.get("/user-profile").then(res => {
+            setUser(res.data.fullname);
         })
 
         axios.get("/get-questions").then(res => {

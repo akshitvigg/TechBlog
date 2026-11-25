@@ -6,7 +6,8 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import ReactLoading from "react-loading";
-import TextEditorRender from "../TextEditorRender";
+import {Link} from "react-router-dom";
+import {excerpt} from "../Components/textUtils";
 
 const ManageBlogs = () => {
     const [show, setShow] = useState(false);
@@ -138,52 +139,42 @@ const ManageBlogs = () => {
                     <div className="row gx-5">
                         <div className="col-lg-12 mb-2">
                             <Button variant="primary" className={"mb-2"} onClick={handleShow}>
-                                <FaPlus/>
+                                <FaPlus/> Add a blog
                             </Button>
                             {
                                 status ?
                                     <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading> :
                                     blogs.length > 0 ?
-                                        <div className={"table-responsive"}>
-                                            <table className={"table mt-4"}>
-                                                <thead>
-                                                <tr className={"text-center"}>
-                                                    <th>Sr. No.</th>
-                                                    <th>Title</th>
-                                                    <th>Description</th>
-                                                    <th>Posted On</th>
-                                                    <th>Category</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {
-                                                    blogs.map((value, index) => {
-                                                        let {bdt, message, cat_name, blog_id, title} = value;
-                                                        return (<tr key={index} className={"text-center"}>
-                                                            <td>{index + 1}</td>
-                                                            <td>{title}</td>
-                                                            <td><TextEditorRender
-                                                                htmlString={message}></TextEditorRender></td>
-                                                            <td>{bdt}</td>
-                                                            <td>{cat_name}</td>
-                                                            <td>
-                                                                <button type={"button"} className={"btn btn-3 me-2"}
-                                                                        aria-label={`Edit ${title}`}
-                                                                        onClick={() => editBlog(value)}><FaEdit/>
-                                                                </button>
-                                                                <button type={"button"} className={"btn btn-3"}
-                                                                        onClick={() => delBlog(blog_id)}><FaTrash/>
-                                                                </button>
-                                                            </td>
-                                                        </tr>)
-                                                    })
-                                                }
-                                                </tbody>
-                                            </table>
+                                        <div className="tb-my-blog-grid">
+                                            {blogs.map((blog) => (
+                                                <article className="tb-my-blog-card" key={blog.blog_id}>
+                                                    <div className="tb-my-blog-meta">
+                                                        <span className="tb-category-chip">{blog.cat_name || "Article"}</span>
+                                                        <time>{blog.bdt}</time>
+                                                    </div>
+                                                    <h3>{blog.title}</h3>
+                                                    <p>{excerpt(blog.message, 180) || "This article has no preview text yet."}</p>
+                                                    <div className="tb-my-blog-actions">
+                                                        <Link to={`/user/blog-details-user/${blog.blog_id}`} className="tb-my-blog-read">
+                                                            Read article
+                                                        </Link>
+                                                        <div>
+                                                            <button type="button" className="tb-my-blog-icon"
+                                                                    aria-label={`Edit ${blog.title}`}
+                                                                    onClick={() => editBlog(blog)}><FaEdit/></button>
+                                                            <button type="button" className="tb-my-blog-icon is-danger"
+                                                                    aria-label={`Delete ${blog.title}`}
+                                                                    onClick={() => delBlog(blog.blog_id)}><FaTrash/></button>
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            ))}
                                         </div>
                                         :
-                                        <div className={"alert alert-danger"}>No data found</div>
+                                        <div className="tb-empty-state">
+                                            <h4>No articles yet</h4>
+                                            <p>Your published blogs will appear here. Use “Add blog” to write your first one.</p>
+                                        </div>
                             }
 
                         </div>
