@@ -1,41 +1,47 @@
 import {ErrorMessage} from "@hookform/error-message";
 import {useForm} from "react-hook-form";
-import axios, {head} from "axios";
+import axios from "axios";
 import Swal from "sweetalert2";
 import {useEffect, useState} from "react";
 const PostQuestion = () => {
     let [category,setCategory]= useState([]);
+    let [loadingCategories, setLoadingCategories] = useState(true);
+    let [categoryError, setCategoryError] = useState("");
     let {register, handleSubmit, reset, formState: {errors}} = useForm()
     useEffect(()=>{
-        axios.get("http://localhost:3300/view-categories").then(res=>{
-            console.log(res.data);
-            setCategory(res.data);
-        })
+        axios.get("/view-categories")
+            .then(res => {
+                if (!Array.isArray(res.data)) throw new Error("Invalid category response");
+                setCategory(res.data);
+            })
+            .catch(() => setCategoryError("Could not load categories. Please refresh and try again."))
+            .finally(() => setLoadingCategories(false))
     },[])
-    function questionAction(data){
-        console.log(data);
+    async function questionAction(data){
         let {category,question} =data;
         let nquestion = `<pre>${question}</pre>`;
-        axios.post("http://localhost:3300/post-question",{
-            category, nquestion
-        }).then(res=>{
-            console.log(res.data);
+        try {
+            const res = await axios.post("/post-question", {category, nquestion});
             if(res.data ==="inserted"){
                 reset()
-
                 Swal.fire({
                     icon:"success",
                     title:'Question posted successfully',
                     showConfirmButton: false,timer:1500
                 })
-            }
-            else{
+            } else {
                 Swal.fire({
                     icon:"error",
                     title:res.data
                 })
             }
-        })
+        } catch {
+            Swal.fire({
+                icon: "error",
+                title: "Question could not be posted",
+                text: "Please check your connection and selected category, then try again."
+            });
+        }
     }
 
     return (
@@ -43,15 +49,15 @@ const PostQuestion = () => {
             <div className="section page-banner-section user-login-banner">
                 <div className="shape-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" opacity="0.302" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" opacity="0.302" fill="none"
                               d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
                     </svg>
                 </div>
                 <div className="shape-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" fill="none"
                               d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
                     </svg>
                 </div>
@@ -79,8 +85,9 @@ const PostQuestion = () => {
                                         <div className="single-form mb-4">
                                             <label htmlFor={"category"}>Select a Category</label>
                                             <select className="form-control" id={"category"}
+                                                    disabled={loadingCategories || category.length === 0}
                                                     {...register('category', {required: "Category is required"})}>
-                                            <option value={""}>Select</option>
+                                            <option value="">{loadingCategories ? "Loading categories..." : "Select a category"}</option>
                                                 {
                                                     category.map((value,index)=>{
                                                         let {cat_id,cat_name} = value
@@ -90,6 +97,11 @@ const PostQuestion = () => {
                                                     })
                                                 }
                                             </select>
+                                            {categoryError && <p className="text-danger" role="alert">{categoryError}</p>}
+                                            {!loadingCategories && !categoryError && category.length === 0 &&
+                                                <p className="text-muted mt-2" role="status">
+                                                    No categories are available yet. Ask an administrator to add one.
+                                                </p>}
                                             <ErrorMessage name={"category"} errors={errors}
                                                           render={({message}) => <p
                                                               className={"text-danger"}>{message}</p>}></ErrorMessage>

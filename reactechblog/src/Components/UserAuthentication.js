@@ -6,7 +6,7 @@ const UserAuthentication = ({Component}) => {
     // console.log(Component);
     let navigate = useNavigate();
     useEffect(() => {
-        axios.get("http://localhost:3300/user-check-authentication").then(response => {
+        axios.get("/user-check-authentication").then(response => {
             // console.log(response.data);
             if (response.data === "fails") {
                navigate("/user-LoginRegister")
@@ -14,7 +14,7 @@ const UserAuthentication = ({Component}) => {
                 // console.log(response.data);
             }
         })
-    })
+    }, [navigate])
     return (
         <>
             <Component/>

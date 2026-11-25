@@ -2,6 +2,14 @@
   text-align: center;
 }
 
+.page-banner-section {
+  background: linear-gradient(135deg, #182848 0%, #2f5b9d 100%);
+}
+
+.header-section {
+  box-shadow: 0 2px 18px rgba(16, 32, 63, 0.08);
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -13,8 +21,8 @@
   }
 }
 .user-login-banner{
-  background: url("../public/assets/images/bg/page-banner.jpg");
-  height: 100px !important;
+  background: linear-gradient(135deg, #182848 0%, #2f5b9d 100%) !important;
+  height: auto !important;
 }
 .footer-bg{
   background-image: url("../public/assets/images/bg/footer-bg.jpg");

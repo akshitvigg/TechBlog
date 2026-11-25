@@ -152,8 +152,9 @@
 	-----------------------------------*/
     const offCanvasMenu = function (selector) {
 
-        const $offCanvasNav = document.querySelector(selector),
-            $subMenu = $offCanvasNav.querySelectorAll('.sub-menu');
+        const $offCanvasNav = document.querySelector(selector);
+        if (!$offCanvasNav) return;
+        const $subMenu = $offCanvasNav.querySelectorAll('.sub-menu');
         $subMenu.forEach(function (subMenu) {
             const menuExpand = document.createElement('span')
             menuExpand.classList.add('menu-expand')
@@ -361,7 +362,6 @@
         duration: 1200,
         once: true,
     });
-
 
 
 

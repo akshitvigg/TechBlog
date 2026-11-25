@@ -17,12 +17,12 @@ const UserHome = () => {
     let {register, handleSubmit, reset, formState: {errors}} = useForm()
 
     useEffect(() => {
-        axios.get("http://localhost:3300/user-check-authentication").then(res => {
+        axios.get("/user-check-authentication").then(res => {
             // console.log(res.data);
             setUser(res.data);
         })
 
-        axios.get("http://localhost:3300/get-questions-user").then(res => {
+        axios.get("/get-questions").then(res => {
             console.log(res.data);
             setQuestions(res.data);
             setStatus(false);
@@ -38,10 +38,9 @@ const UserHome = () => {
         console.log(data)
         let {qid,answer} = data;
         answer =`<pre>${answer}</pre>`
-        axios.post("http://localhost:3300/add-answers", {
+        axios.post("/add-answers", {
             qid,answer
         }).then(res => {
-            console.log(res.data);
             if (res.data === "inserted") {
                 reset();
                 Swal.fire({
@@ -50,7 +49,15 @@ const UserHome = () => {
                     showConfirmButton:false,
                     timer:1500
                 })
+            } else {
+                Swal.fire({icon: "error", title: "Could not add answer", text: res.data});
             }
+        }).catch(error => {
+            Swal.fire({
+                icon: "error",
+                title: "Could not add answer",
+                text: error.response?.data || "Check your connection and try again."
+            });
         })
     }
 
@@ -59,15 +66,15 @@ const UserHome = () => {
             <div className="section page-banner-section user-login-banner">
                 <div className="shape-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" opacity="0.302" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" opacity="0.302" fill="none"
                               d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
                     </svg>
                 </div>
                 <div className="shape-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" fill="none"
                               d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
                     </svg>
                 </div>
@@ -77,7 +84,7 @@ const UserHome = () => {
                             <div className="col-lg-12">
                                 <div className="page-banner text-center">
                                     <h2 className="title">Welcome, {user}</h2>
-                                    <h3 className={"text-white"}>Questions & It's Answers</h3>
+                                    <h3 className={"text-white"}>Questions &amp; Answers</h3>
                                 </div>
                             </div>
                         </div>
@@ -99,34 +106,26 @@ const UserHome = () => {
                                             <div className={"alert alert-info mt-4"}>No questions from other users yet.</div>
                                             :
                                             questions.map((value, index) => {
-                                                let {qdate, question, ques_id, user} = value;
+                                                let {qdate, question, ques_id, cat_name} = value;
                                                 return (
-                                                    <table key={index} className={"table table-dark table-borderless"}>
-                                                        <thead>
-                                                        <tr>
-                                                            <th className={"bg-secondary"}> {index + 1})</th>
-                                                            <th className={"bg-secondary"}>
-                                                                <span className={"float-end text-end"}>Posted On: <strong>{qdate}</strong></span>
-                                                            </th>
-                                                        </tr>
-                                                        <tr>
-                                                            <th colSpan={"2"} className={"bg-secondary text-center ps-5 fs-5"}>
-                                                                <TextEditorRender htmlString={question}/>
-                                                            </th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <tr>
-                                                            <td colSpan={"2"} className={"text-end"}>
-                                                                <Button type={"button"}
-                                                                        className={"btn btn-4 me-2"}
-                                                                        onClick={() => handleShow(ques_id)}><FaPlusCircle/> Add an Answer</Button>
-                                                                <Link to={`/user/view-others-answers/${ques_id}`}
-                                                                      className={"btn btn-3"}><FaRegEye/> View Answers</Link>
-                                                            </td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
+                                                    <article key={ques_id} className="tb-question-card">
+                                                        <div className="tb-question-meta">
+                                                            <span className="tb-category-chip">{cat_name || "Question"}</span>
+                                                            <span>Posted {qdate}</span>
+                                                        </div>
+                                                        <div className="tb-question-content">
+                                                            <TextEditorRender htmlString={question}/>
+                                                        </div>
+                                                        <div className="tb-question-actions">
+                                                            <Button type="button" className="btn btn-4"
+                                                                    onClick={() => handleShow(ques_id)}>
+                                                                <FaPlusCircle/> Add an answer
+                                                            </Button>
+                                                            <Link to={`/user/view-others-answers/${ques_id}`} className="btn btn-3">
+                                                                <FaRegEye/> View answers
+                                                            </Link>
+                                                        </div>
+                                                    </article>
                                                 )
                                             })
                                 }

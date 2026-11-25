@@ -1,210 +1,131 @@
-import {useEffect, useState} from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import {Link, useParams} from "react-router-dom";
-import ReactLoading from "react-loading";
+import { useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
+import BlogArticle from "../Components/BlogArticle";
 import TextEditorRender from "../TextEditorRender";
-import {useForm} from "react-hook-form";
-import {ErrorMessage} from "@hookform/error-message";
 
 const BlogDetailsForUsers = () => {
-    let {blog_id} = useParams();
-    let [status, setStatus] = useState(true);
-    let [comments, setComments] = useState([]);
-    let [blogs, setBlogs] = useState([]);
-    let {register, handleSubmit, reset, formState: {errors}} = useForm()
-    useEffect(() => {
-        axios.get("http://localhost:3300/blog-details/" + blog_id).then(res => {
-            console.log(res.data);
-            setBlogs(res.data);
-        })
-        fetch_comments();
-    }, []);
-    let fetch_comments = () => {
-        axios.get("http://localhost:3300/fetch-comments/" + blog_id).then(res => {
-            console.log(res.data);
-            setStatus(false)
-            setComments(res.data);
-        })
-    }
+  const { blog_id } = useParams();
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-    function postComment(data) {
-        let {comment, blog_id} = data;
-        let blog_comment = `<pre>${comment}</pre>`;
-        axios.post("http://localhost:3300/post-comment", {
-            comment: blog_comment,
-            blog_id: blog_id
-        }).then(res => {
-            console.log(res.data);
-            if (res.data === "inserted") {
-                reset();
-                fetch_comments();
-            }
-        })
-    }
+  const fetchComments = useCallback(() => {
+    return axios
+      .get("/fetch-comments/" + blog_id)
+      .then((res) => setComments(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [blog_id]);
 
-    return (
-        <>
-            <div className="section page-banner-section user-login-banner">
-                <div className="shape-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" opacity="0.302" fill="none"
-                              d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
-                    </svg>
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  async function postComment({ comment }) {
+    setSubmitting(true);
+    try {
+      const res = await axios.post("/post-comment", {
+        comment: `<pre>${comment}</pre>`,
+        blog_id,
+      });
+      if (res.data === "inserted") {
+        reset();
+        await fetchComments();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Could not post comment",
+          text: typeof res.data === "string" ? res.data : "",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Could not post comment",
+        text:
+          typeof error.response?.data === "string"
+            ? error.response.data
+            : "Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const newestFirst = [...comments].reverse();
+
+  return (
+    <BlogArticle
+      blogId={blog_id}
+      backTo="/user/all-blogs"
+      backLabel="All articles"
+    >
+      <section className="tb-comments" aria-labelledby="comments-title">
+        <h2 id="comments-title">Comments ({comments.length})</h2>
+        <p>Keep it helpful and respectful.</p>
+
+        <form
+          className="tb-comment-form"
+          onSubmit={handleSubmit(postComment)}
+          noValidate
+        >
+          <textarea
+            aria-label="Write a comment"
+            placeholder="Add to the discussion"
+            {...register("comment", {
+              required: "Write something before posting",
+            })}
+          />
+          {errors.comment && (
+            <p className="tb-field-error">{errors.comment.message}</p>
+          )}
+          <button
+            className="tb-auth-submit"
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? "Posting..." : "Post comment"}
+          </button>
+        </form>
+
+        {loading && <p className="tb-state">Loading comments…</p>}
+        {!loading && newestFirst.length === 0 && (
+          <div className="tb-empty-state">
+            <h4>No comments yet</h4>
+            <p>Start the conversation.</p>
+          </div>
+        )}
+        {newestFirst.map((item, index) => {
+          const name = (item.user || "Member").split("@")[0];
+          return (
+            <div className="tb-comment" key={item.comment_id || index}>
+              <span className="tb-avatar" aria-hidden="true">
+                {name.charAt(0).toUpperCase()}
+              </span>
+              <div className="tb-comment-body">
+                <div className="tb-comment-head">
+                  <strong>{name}</strong>
+                  <span>{item.cDT}</span>
                 </div>
-                <div className="shape-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" fill="none"
-                              d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
-                    </svg>
+                <div className="tb-comment-text">
+                  <TextEditorRender htmlString={item.comment} />
                 </div>
-                <div className="container">
-                    <div className="page-banner-wrap">
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="page-banner text-center">
-                                    <h2 className="title">Blog Details</h2>
-                                    <ul className="breadcrumb justify-content-center">
-                                        <li className="breadcrumb-item"><a href="/">Home</a></li>
-                                        <li className="breadcrumb-item active" aria-current="page">Blog-Details</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-            {
-                blogs.length ?
-                    <div className="section blog-details-section section-padding-02 mb-5">
-                        <div className="container">
-                            <div className="blog-details-wrap">
-                                <div className="row">
-                                    <div className="col-xl-12 col-lg-12">
-                                        <div className="blog-details-post">
-                                            {
-                                                blogs.map((value, index) => {
-                                                    let {blog_id, bdt, title, message, cat_name} = value;
-                                                    return (
-                                                        <>
-                                                        <div className="single-blog-post single-blog">
-                                                            <div className="blog-image">
-                                                                <Link to="/blogs"><img
-                                                                    style={{width: "100%", height: "300px"}}
-                                                                    src="/assets/images/blog/blog-s-2.jpg"
-                                                                    alt=""/></Link>
-                                                                <div className="top-meta">
-                                                                    <span className="date"><span>{bdt}</span></span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="blog-content">
-                                                                <h3 className="title">{title}</h3>
-                                                            </div>
-                                                        </div>
-                                                        <div className="blog-details-content">
-                                                            <div className="blog-quote">
-                                                                <blockquote className="blockquote">
-                                                                    <p><TextEditorRender
-                                                                        htmlString={message}></TextEditorRender></p>
-                                                                </blockquote>
+          );
+        })}
+      </section>
+    </BlogArticle>
+  );
+};
 
-                                                            </div>
-                                                            <div className="comment-wrap">
-                                                                <div className="comment-form">
-                                                                    <div className="comment-form-wrap">
-                                                                        <div className={"row"}>
-                                                                            <div className={"col-md-9"}>
-                                                                                <h3 className="comment-title">Post a
-                                                                                    Comment</h3>
-                                                                                <p>Your email address will not be
-                                                                                    published. Required fields are
-                                                                                    marked *</p>
-                                                                                <form
-                                                                                    onSubmit={handleSubmit(postComment)}>
-                                                                                    <div className="row">
-                                                                                        <div className="col-md-12">
-                                                                                            <input
-                                                                                                type={"hidden"} {...register('blog_id')}
-                                                                                                value={blog_id}/>
-                                                                                            <div
-                                                                                                className="single-form">
-                                                                                                    <textarea {...register('comment', {required: "Comment is required"})}
-                                                                                                              className="form-control"
-                                                                                                              placeholder="Your Message"/>
-                                                                                                <ErrorMessage
-                                                                                                    name={"comment"}
-                                                                                                    errors={errors}
-                                                                                                    render={({message}) =>
-                                                                                                        <p
-                                                                                                            className={"text-danger"}>{message}</p>}></ErrorMessage>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div className="col-md-12">
-                                                                                            <div
-                                                                                                className="form-btn">
-                                                                                                <button
-                                                                                                    className="btn"
-                                                                                                    type="submit">Submit
-                                                                                                </button>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </form>
-                                                                            </div>
-                                                                            <div className={"col-md-3"}>
-                                                                                <h3 className="comment-title">View
-                                                                                    Comment (s)</h3>
-                                                                                {
-                                                                                    status ?
-                                                                                        <ReactLoading
-                                                                                            type={"spinningBubbles"}
-                                                                                            color={"coral"}></ReactLoading> :
-                                                                                    comments.length > 0 ?
-                                                                                    comments.map((val, index) => {
-                                                                                    let {cDT,comment} = val
-                                                                                    return (
-                                                                                    <div key={index}
-                                                                                 className={"card mb-1"}>
-                                                                                <div className={"card-body"}>
-                                                                                    <TextEditorRender
-                                                                                        htmlString={comment}></TextEditorRender>
-                                                                                </div>
-                                                                                <div
-                                                                                    className={"card-footer text-end pe-2"}>
-                                                                                    {cDT}
-                                                                                </div>
-                                                                            </div>
-                                                                            )
-                                                                            })
-                                                                            :
-                                                                            <div
-                                                                                className={"alert alert-danger mt-4"}>No
-                                                                                comments posted
-                                                                                yet
-                                                                            </div>
-                                                                            }
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        </div>
-                                                </>
-                                                )
-                                                })
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div> :
-                    <div></div>
-
-            }
-
-        </>
-    )
-}
 export default BlogDetailsForUsers;

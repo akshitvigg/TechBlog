@@ -1,75 +1,71 @@
 import {ErrorMessage} from "@hookform/error-message";
 import {useForm} from "react-hook-form";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link} from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
+import {useState} from "react";
 
 const UserLogin = () => {
-    let navigate = useNavigate();
-    let {register, handleSubmit, reset, formState: {errors}} = useForm()
+    const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
+    const {register, handleSubmit, formState: {errors}} = useForm();
 
-    function loginAction(data) {
-        console.log(data);
-        let {email,password} = data;
-        axios.post('http://localhost:3300/userLoginAction',data).then(res =>{
-            console.log(res.data);
-            if(res.data ==="loggedIn"){
-                Swal.fire({
-                    icon:'success',
-                    title:'User Logged In successfully',
-                    showConfirmButton:false,
-                    timer:1000
-                })
-                navigate('/user/home')
+    async function loginAction(data) {
+        setSubmitting(true);
+        try {
+            const response = await axios.post("/userLoginAction", data);
+            if (response.data === "loggedIn") {
+                navigate("/user/home");
+                return;
             }
-            else{
-                Swal.fire({
-                    icon:'error',
-                    title:'Invalid Credentials'
-                })
-            }
-
-        })
+            await Swal.fire({icon: "error", title: "Unable to sign in", text: "Check your email and password and try again."});
+        } catch {
+            await Swal.fire({icon: "error", title: "Sign in failed", text: "The service could not be reached. Please try again."});
+        } finally {
+            setSubmitting(false);
+        }
     }
 
     return (
-        <>
-            <div className="login-register-box">
-                <div className="section-title">
-                    <h2 className="title">Login</h2>
-                </div>
-
-                <div className="login-register-form">
-                    <form onSubmit={handleSubmit(loginAction)}>
-                        <div className="single-form">
-                            <input type="text"
-                                   className="form-control" {...register('email', {required: 'Password is required'}, {
-                                minLength: {
-                                    value: 10, message: 'Enter at least 10 characters'
-                                }
-                            })} placeholder="Email"/>
-                            <ErrorMessage name={'email'} errors={errors}
-                                          render={({message}) => <p
-                                              className={"text-danger"}>{message}</p>}></ErrorMessage>
-                        </div>
-                        <div className="single-form">
-                            <input type="password" className="form-control"
-                                   placeholder="Password" {...register('password', {required: 'Password is required'})}/>
-                            <ErrorMessage name={'password'} errors={errors}
-                                          render={({message}) => <p
-                                              className={"text-danger"}>{message}</p>}></ErrorMessage>
-                        </div>
-                        <div className="form-btn">
-                            <button className="btn" type={"submit"}>Login</button>
-                        </div>
-                        <div className="single-form">
-                            <p><a href="#">Lost your password?</a></p>
-                        </div>
-                    </form>
-                </div>
+        <section className="tb-auth-card" aria-labelledby="user-login-title">
+            <div className="tb-auth-card-heading">
+                <span className="tb-auth-eyebrow">WELCOME BACK</span>
+                <h2 id="user-login-title">Sign in</h2>
+                <p>Pick up where your curiosity left off.</p>
             </div>
+            <form className="tb-auth-form" onSubmit={handleSubmit(loginAction)} noValidate>
+                <div className="tb-auth-field">
+                    <label htmlFor="login-email">Email address</label>
+                    <input
+                        id="login-email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        {...register("email", {
+                            required: "Email is required",
+                            pattern: {value: /^\S+@\S+\.\S+$/, message: "Enter a valid email address"}
+                        })}
+                    />
+                    <ErrorMessage name="email" errors={errors} render={({message}) => <p className="tb-field-error">{message}</p>}/>
+                </div>
+                <div className="tb-auth-field">
+                    <label htmlFor="login-password">Password</label>
+                    <input
+                        id="login-password"
+                        type="password"
+                        autoComplete="current-password"
+                        placeholder="Enter your password"
+                        {...register("password", {required: "Password is required"})}
+                    />
+                    <ErrorMessage name="password" errors={errors} render={({message}) => <p className="tb-field-error">{message}</p>}/>
+                </div>
+                <button className="tb-auth-submit" type="submit" disabled={submitting}>
+                    {submitting ? "Signing in..." : "Sign in"}
+                </button>
+                <p className="tb-auth-switch">New to TechBlog? <Link to="/user-LoginRegister#register">Create an account</Link></p>
+            </form>
+        </section>
+    );
+};
 
-        </>
-    )
-}
 export default UserLogin;

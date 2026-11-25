@@ -3,22 +3,36 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
 import TextEditorRender from "../TextEditorRender";
-import {Button} from "react-bootstrap";
-import {FaPlusCircle, FaRegEye} from "react-icons/fa";
 
 const SearchQuestion = () => {
     let {str} = useParams();
     let [status, setStatus] = useState(true)
     let [result,setResult]=useState([]);
+    let [error, setError] = useState("");
+
     useEffect(() => {
-        axios.get("http://localhost:3300/search/" + str).then(res => {
-            setTimeout(show,3000);
-            function show(){
-                setResult(res.data)
-                setStatus(false);
-            }
-        })
-    }, []);
+        let active = true;
+        setStatus(true);
+        setError("");
+
+        axios.get("/search/" + encodeURIComponent(str))
+            .then(res => {
+                if (active) setResult(Array.isArray(res.data) ? res.data : []);
+            })
+            .catch(() => {
+                if (active) {
+                    setResult([]);
+                    setError("Search could not be completed. Please try again.");
+                }
+            })
+            .finally(() => {
+                if (active) setStatus(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [str]);
 
 
     return (
@@ -26,15 +40,15 @@ const SearchQuestion = () => {
             <div className="section page-banner-section user-login-banner">
                 <div className="shape-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" opacity="0.302" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" opacity="0.302" fill="none"
                               d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
                     </svg>
                 </div>
                 <div className="shape-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" fill="none"
+                        <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                              strokeLinejoin="miter" fill="none"
                               d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
                     </svg>
                 </div>
@@ -58,12 +72,14 @@ const SearchQuestion = () => {
                                 {
                                     status ?
                                         <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading> :
+                                        error ?
+                                            <div className={"alert alert-danger"} role="alert">{error}</div> :
                                         result.length > 0 ?
                                             result.map((value,index)=>{
                                                 let {quesDate, question, ques_id} = value;
 
                                                 return(
-                                                    <table className={"table table-dark table-borderless"}>
+                                                    <table className={"table table-borderless"} key={ques_id}>
                                                         <thead>
                                                         <tr>
                                                             <th className={"bg-secondary"}> {index+1})</th>

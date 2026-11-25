@@ -1,80 +1,60 @@
+import {Link} from "react-router-dom";
+import {FaBookOpen, FaComments, FaUserShield} from "react-icons/fa";
 import PublicNavbar from "./Components/PublicNavbar";
 import Footer from "./Footer";
 
-const About = ()=>{
-    return(
-        <>
-            <PublicNavbar/>
-            <div className="section page-banner-section user-login-banner">
-                <div className="shape-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" opacity="0.302" fill="none"
-                              d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
-                    </svg>
-                </div>
-                <div className="shape-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                        <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                              stroke-linejoin="miter" fill="none"
-                              d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
-                    </svg>
-                </div>
-                <div className="container">
-                    <div className="page-banner-wrap">
-                        <div className="row">
-                            <div className="col-lg-12">
-                                <div className="page-banner text-center">
-                                    <h2 className="title">About Us</h2>
-                                    <ul className="breadcrumb justify-content-center">
-                                        <li className="breadcrumb-item"><a href="/">Home</a></li>
-                                        <li className="breadcrumb-item active" aria-current="page">About Us</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+const About = () => (
+    <>
+        <PublicNavbar/>
+        <main className="tb-about-page">
+            <section className="tb-about-hero">
+                <div className="tb-about-hero-inner">
+                    <span className="tb-about-eyebrow">ABOUT TECHBLOG</span>
+                    <h1>Technology makes more sense <span>when we learn together.</span></h1>
+                    <p>TechBlog brings technical articles and community Q&amp;A into one welcoming place to explore, ask, and share.</p>
+                    <div className="tb-about-actions">
+                        <Link to="/blogs" className="tb-about-primary">Explore articles <span aria-hidden="true">→</span></Link>
+                        <Link to="/user-LoginRegister" className="tb-about-secondary">Join the community</Link>
                     </div>
                 </div>
-            </div>
-            <div className="section login-register-section ">
-                <div className="container">
-                    <h3 className={"mt-2"}>Tech Blog and Troubleshooting Website</h3>
+                <div className="tb-about-hero-mark" aria-hidden="true">TB<span>.</span></div>
+            </section>
 
-                    <p>
-                        This project involves creating a website that serves two primary functions: a tech blog and a
-                        troubleshooting resource. The tech blog will feature articles on various technology topics,
-                        while the troubleshooting section will offer solutions to common tech problems.
-                    </p>
-                    <p>
-                        * Troubleshooting Help**: Offer detailed guides and solutions for common technical issues
-                        faced by users.
-                        * Interactive Features: Allow users to comment on blog posts, ask questions, and share
-                        their own troubleshooting tips.
-                        * User-Friendly Design: Ensure the website is easy to navigate and visually appealing.
-                    </p>
-                    <p>
-                        <strong>Features</strong>
-                        <ul>
-                            <li><strong>Tech Blog Section:</strong>
-                                Regularly updated articles on various tech topics (e.g., software reviews,
-                                hardware comparisons, coding tutorials, cybersecurity tips).
-                                Organize articles into categories for easier navigation.
-                                Allow users to leave comments and engage in discussions.
-                            </li>
-                            <li>
-                                <strong>Troubleshooting Section</strong>  Guides and solutions for frequently encountered technical problems (e.g.,
-                                software errors, hardware malfunctions, network issues).
-                                A search bar to help users quickly find relevant troubleshooting
-                                guides.
-                                A section where users can submit their own solutions or ask for help
-                                with specific problems.
-                            </li>
-                        </ul>
-                    </p>
+            <section className="tb-about-content">
+                <div className="tb-about-section-heading">
+                    <span className="tb-about-eyebrow">WHAT YOU CAN DO HERE</span>
+                    <h2>A small platform with a clear purpose.</h2>
+                    <p>Read, ask, and contribute—with moderation helping keep shared answers useful.</p>
                 </div>
-            </div>
-            <Footer/>
-        </>
-    )
-}
+                <div className="tb-about-feature-grid">
+                    <article className="tb-about-feature">
+                        <span className="tb-about-icon"><FaBookOpen/></span>
+                        <h3>Discover tech articles</h3>
+                        <p>Browse blog posts by category and join the conversation through comments.</p>
+                    </article>
+                    <article className="tb-about-feature">
+                        <span className="tb-about-icon"><FaComments/></span>
+                        <h3>Ask the community</h3>
+                        <p>Post technical questions, search what others have asked, and contribute answers.</p>
+                    </article>
+                    <article className="tb-about-feature">
+                        <span className="tb-about-icon"><FaUserShield/></span>
+                        <h3>Thoughtful moderation</h3>
+                        <p>Answers are reviewed by admins before they are shown publicly.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section className="tb-about-bottom">
+                <div>
+                    <span className="tb-about-eyebrow">READY TO TAKE PART?</span>
+                    <h2>Bring your question. Leave with a new idea.</h2>
+                </div>
+                <Link to="/user-LoginRegister" className="tb-about-primary">Get started <span aria-hidden="true">→</span></Link>
+            </section>
+        </main>
+        <Footer/>
+    </>
+);
+
 export default About;

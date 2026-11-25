@@ -16,7 +16,7 @@ const ManageAdmins = () => {
     function add_admin(data) {
         console.log(data)
         let {username, password, fullname, phone} = data;
-        axios.post("http://localhost:3300/add-admin-action", {
+        axios.post("/add-admin-action", {
             username, password, fullname, phone
         }).then(res => {
             console.log(res.data);
@@ -40,7 +40,7 @@ const ManageAdmins = () => {
     }
 
     function fetchAdmins() {
-        axios.get("http://localhost:3300/fetch-admins").then(response => {
+        axios.get("/fetch-admins").then(response => {
             console.log(response.data);
             setAdmins(response.data);
         })
@@ -56,7 +56,7 @@ const ManageAdmins = () => {
             confirmButtonText: 'Yes, Change Status!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.post("http://localhost:3300/update-status-admin", {
+                axios.post("/update-status-admin", {
                     username, status
                 })
                     .then(res => {
@@ -91,7 +91,7 @@ const ManageAdmins = () => {
 
                     {
                         admins.length > 0 ?
-                            <table className={"table table-dark mt-3"}>
+                            <table className={"table mt-3"}>
                                 <thead>
                                 <tr className={"text-center"}>
                                     <th>Sr. No.</th>
@@ -155,12 +155,13 @@ const ManageAdmins = () => {
                                         <div className="inputGroup mb-32">
                                             <label htmlFor="password">Password</label>
                                             <input
-                                                type="password" {...register('password', {required: "Password is required"}, {
-                                                minlength: {
-                                                    value: 4,
-                                                    message: "Enter at least 4 characters"
-                                                }
-                                            })} id="password"/>
+                                                type="password" {...register('password', {
+                                                    required: "Password is required",
+                                                    minLength: {
+                                                        value: 6,
+                                                        message: "Enter at least 6 characters"
+                                                    }
+                                                })} id="password"/>
                                             <ErrorMessage name={"password"} errors={errors}
                                                           render={({message}) => <p
                                                               className={"text-danger"}>{message}</p>}></ErrorMessage>
@@ -186,8 +187,12 @@ const ManageAdmins = () => {
                                         <label htmlFor="phone">Phone No.</label>
                                         <div className="inputGroup mb-32">
                                             <input
-                                                type="number" {...register('phone', {required: "Phone No. is required"})}
-                                                id="cpassword"/>
+                                                type="tel" inputMode="numeric"
+                                                {...register('phone', {
+                                                    required: "Phone No. is required",
+                                                    pattern: {value: /^\d{10,15}$/, message: "Enter 10 to 15 digits"}
+                                                })}
+                                                id="phone"/>
                                             <ErrorMessage name={"phone"} errors={errors}
                                                           render={({message}) => <p
                                                               className={"text-danger"}>{message}</p>}></ErrorMessage>

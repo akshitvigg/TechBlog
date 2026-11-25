@@ -1,179 +1,255 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import {
+  FaBookOpen,
+  FaComments,
+  FaLightbulb,
+  FaShieldAlt,
+} from "react-icons/fa";
 import PublicNavbar from "./Components/PublicNavbar";
+import BlogCard from "./Components/BlogCard";
+import { excerpt } from "./Components/textUtils";
 import Footer from "./Footer";
-import {Link} from "react-router-dom";
+
 const HomePage = () => {
-    return (
-        <>
-            <div className="main-wrapper" >
-                <PublicNavbar/>
-                <div className="section techwix-hero-section-03 d-flex align-items-center header-bg"    >
-                    <div className="shape-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                            <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px"
-                                  stroke-linecap="butt" stroke-linejoin="miter" opacity="0.302" fill="none"
-                                  d="M28.14,285.269 L325.37,21.216 C358.860,-8.852 410.655,-5.808 440.723,28.14 L704.777,325.37 C734.846,358.860 731.802,410.654 697.979,440.723 L400.956,704.777 C367.133,734.845 315.338,731.802 285.269,697.979 L21.216,400.955 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
-                        </svg>
-                    </div>
-                    <div className="shape-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                            <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px"
-                                  stroke-linecap="butt" stroke-linejoin="miter" fill="none"
-                                  d="M38.245,381.103 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.746 L29.158,535.733 C-11.32,490.524 -6.963,421.293 38.245,381.103 Z"/>
-                        </svg>
-                    </div>
-                    <div className="container">
-                        <div className="row align-items-center">
-                            <div className="col-lg-6">
-                                <div className="hero-content">
-                                    <h3 className="sub-title" >Technology Related
-                                        Consultancy</h3>
-                                    <h2 className="title" >We transform ideas
-                                        into technology</h2>
-                                    <p >We provide the most responsive and
-                                        functional IT design for companies and businesses worldwide.</p>
+  const [blogs, setBlogs] = useState([]);
+  const [questions, setQuestions] = useState([]);
 
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  // Both lists are optional: if the server is down or empty, those sections simply hide.
+  useEffect(() => {
+    axios
+      .get("/fetch-blogs")
+      .then((res) => Array.isArray(res.data) && setBlogs(res.data.slice(0, 3)))
+      .catch(() => {});
+    axios
+      .get("/get-questions")
+      .then(
+        (res) => Array.isArray(res.data) && setQuestions(res.data.slice(0, 4)),
+      )
+      .catch(() => {});
+  }, []);
 
-                <div className="section techwix-service-section-03 service-bg" >
-                    <div className="container">
-                        <div className="service-wrap-03">
-                            <div className="row">
-                                <div className="col-xl-3 col-md-6">
-                                    <div className="service-item-03">
-                                        <div className="service-img">
-                                            <img src="/assets/images/ser-icon9.png" alt=""/>
-                                        </div>
-                                        <div className="service-content">
-                                            <h3 className="title"><a href="">Infrastructure Technology</a>
-                                            </h3>
-                                            <p>Accelerate innovation with world-class tech teams We’ll match you to an
-                                                entire remote team of incredible freelance talent.</p>
-                                            <div className="read-more">
-                                                <a href=""><i className="fas fa-plus"></i> Read More</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-md-6">
-                                    <div className="service-item-03">
-                                        <div className="service-img">
-                                            <img src="/assets/images/ser-icon10.png" alt=""/>
-                                        </div>
-                                        <div className="service-content">
-                                            <h3 className="title"><a href="service.html">IT Consultancy & solution</a>
-                                            </h3>
-                                            <p>Accelerate innovation with world-class tech teams We’ll match you to an
-                                                entire remote team of incredible freelance talent.</p>
-                                            <div className="read-more">
-                                                <a href="service.html"><i className="fas fa-plus"></i> Read More</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-md-6">
-                                    <div className="service-item-03">
-                                        <div className="service-img">
-                                            <img src="/assets/images/ser-icon11.png" alt=""/>
-                                        </div>
-                                        <div className="service-content">
-                                            <h3 className="title"><a href="service.html">Cloud managed services</a></h3>
-                                            <p>Accelerate innovation with world-class tech teams We’ll match you to an
-                                                entire remote team of incredible freelance talent.</p>
-                                            <div className="read-more">
-                                                <a href="service.html"><i className="fas fa-plus"></i> Read More</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xl-3 col-md-6">
-                                    <div className="service-item-03">
-                                        <div className="service-img">
-                                            <img src="/assets/images/ser-icon12.png" alt=""/>
-                                        </div>
-                                        <div className="service-content">
-                                            <h3 className="title"><a href="service.html">Blockchain technology</a></h3>
-                                            <p>Accelerate innovation with world-class tech teams We’ll match you to an
-                                                entire remote team of incredible freelance talent.</p>
-                                            <div className="read-more">
-                                                <a href="service.html"><i className="fas fa-plus"></i> Read More</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  const latest = questions[0];
 
-                <div className="section techwix-choose-us-section section-padding choose-us-bg">
-                    <div className="container">
-                        <div className="choose-us-wrap">
-                            <div className="section-title text-center">
-                                <h3 className="sub-title">REASON TO CHOOSE US</h3>
-                                <h2 className="title">We provide truly prominent IT solutions.</h2>
-                            </div>
-                            <div className="choose-us-content-wrap">
-                                <div className="row">
-                                    <div className="col-lg-4 col-md-6">
-                                        <div className="choose-us-item">
-                                            <div className="choose-us-img">
-                                                <a href="choose-us.html"><img src="/assets/images/choose-us1.jpg" alt=""/></a>
-                                                <div className="choose-us-content">
-                                                    <h3 className="title">Information managemnet system</h3>
-                                                    <p>Accelerate innovation with world-class tech teams We’ll match you
-                                                        to an entire remote team of incredible freelance talent for all
-                                                        your software development needs.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-4 col-md-6">
-                                        <div className="choose-us-item">
-                                            <div className="choose-us-img">
-                                                <a href="choose-us.html"><img src="/assets/images/choose-us2.jpg" alt=""/></a>
-                                                <div className="choose-us-content">
-                                                    <h3 className="title">Information Database Security</h3>
-                                                    <p>Accelerate innovation with world-class tech teams We’ll match you
-                                                        to an entire remote team of incredible freelance talent for all
-                                                        your software development needs.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-lg-4 col-md-6">
-                                        <div className="choose-us-item">
-                                            <div className="choose-us-img">
-                                                <a href="choose-us.html"><img src="/assets/images/choose-us3.jpg" alt=""/></a>
-                                                <div className="choose-us-content">
-                                                    <h3 className="title">Multifunctional Technology</h3>
-                                                    <p>Accelerate innovation with world-class tech teams We’ll match you
-                                                        to an entire remote team of incredible freelance talent for all
-                                                        your software development needs.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-lg-12">
-                                        <div className="more-choose-content text-center">
-                                            <p>Learn more about <Link to="#">More reason <i
-                                                className="fas fa-long-arrow-alt-right"></i></Link></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <Footer/>
+  return (
+    <div className="tb-home">
+      <PublicNavbar />
+      <main>
+        <section className="tb-hero">
+          <div className="tb-home-container tb-hero-content">
+            <div className="tb-hero-copy">
+              <span className="tb-eyebrow">
+                <FaLightbulb /> A community for curious minds
+              </span>
+              <h1>
+                Learn together.
+                <br />
+                <span>Build better.</span>
+              </h1>
+              <p>
+                Share what you know, ask the questions you are working through,
+                and learn from a community of technology enthusiasts.
+              </p>
+              <div className="tb-hero-actions">
+                <Link className="tb-primary-button" to="/user-LoginRegister">
+                  Join the community
+                </Link>
+                <Link className="tb-secondary-button" to="/blogs">
+                  Explore articles
+                </Link>
+              </div>
+              <div className="tb-hero-note">
+                <FaShieldAlt /> Helpful knowledge, with answers reviewed by
+                admins
+              </div>
             </div>
-        </>
-    )
-}
+            {latest && (
+              <aside className="tb-hero-card" aria-label="Latest question">
+                <div className="tb-hero-card-top">
+                  <span>Latest question</span>
+                  {latest.cat_name && (
+                    <span className="tb-category-chip">{latest.cat_name}</span>
+                  )}
+                </div>
+                <p className="tb-hero-card-text">
+                  {excerpt(latest.question, 180)}
+                </p>
+                <div className="tb-hero-card-foot">
+                  <span>{latest.quesDate}</span>
+                  <span>
+                    <FaShieldAlt /> Answers reviewed
+                  </span>
+                </div>
+              </aside>
+            )}
+          </div>
+        </section>
+
+        {blogs.length > 0 && (
+          <section className="tb-latest-section">
+            <div className="tb-home-container">
+              <div className="tb-section-row">
+                <div>
+                  <h2>Latest articles</h2>
+                  <p>Fresh writing from people who build things.</p>
+                </div>
+                <Link to="/blogs" className="tb-link-arrow">
+                  All articles <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+              <div className="tb-blog-grid">
+                {blogs.map((blog) => (
+                  <BlogCard
+                    key={blog.blog_id}
+                    blog={blog}
+                    to={`/blog-details/${blog.blog_id}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="tb-home-section">
+          <div className="tb-home-container">
+            <div className="tb-section-heading">
+              <span className="tb-eyebrow">One place to share and grow</span>
+              <h2>Knowledge moves forward when we share it.</h2>
+              <p>
+                TechBlog brings technical articles and community Q&amp;A
+                together in a simple, organized space.
+              </p>
+            </div>
+            <div className="tb-feature-grid">
+              <article className="tb-feature-card">
+                <span className="tb-feature-icon tb-icon-blue">
+                  <FaComments />
+                </span>
+                <h3>Ask and answer</h3>
+                <p>
+                  Ask technical questions, share practical answers, and find
+                  help from other learners.
+                </p>
+                <Link to="/user-LoginRegister">
+                  Explore the Q&amp;A community{" "}
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </article>
+              <article className="tb-feature-card">
+                <span className="tb-feature-icon tb-icon-violet">
+                  <FaBookOpen />
+                </span>
+                <h3>Write and discover</h3>
+                <p>
+                  Publish technical blogs by category and learn from articles
+                  written by the community.
+                </p>
+                <Link to="/blogs">
+                  Browse technical blogs <span aria-hidden="true">→</span>
+                </Link>
+              </article>
+              <article className="tb-feature-card">
+                <span className="tb-feature-icon tb-icon-green">
+                  <FaShieldAlt />
+                </span>
+                <h3>Keep it constructive</h3>
+                <p>
+                  Admin review helps keep answers organized and supports a more
+                  useful learning space.
+                </p>
+                <Link to="/about-us">
+                  Learn about TechBlog <span aria-hidden="true">→</span>
+                </Link>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {questions.length > 0 && (
+          <section className="tb-questions-section">
+            <div className="tb-home-container">
+              <div className="tb-section-row">
+                <div>
+                  <h2>Recently asked</h2>
+                  <p>Questions the community is working through right now.</p>
+                </div>
+                <Link to="/user-LoginRegister" className="tb-link-arrow">
+                  Sign in to answer <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+              <div className="tb-q-grid">
+                {questions.map((q) => (
+                  <article className="tb-q-item" key={q.ques_id}>
+                    {q.cat_name && (
+                      <span className="tb-category-chip">{q.cat_name}</span>
+                    )}
+                    <p>{excerpt(q.question, 160)}</p>
+                    <div className="tb-q-item-foot">
+                      <span>Asked {q.quesDate}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="tb-steps-section">
+          <div className="tb-home-container tb-steps-layout">
+            <div>
+              <span className="tb-eyebrow">Getting started</span>
+              <h2>Turn a question into shared knowledge.</h2>
+              <p>
+                Create an account, join a discussion, or publish a guide. Your
+                next useful contribution can start small.
+              </p>
+            </div>
+            <ol className="tb-steps-list">
+              <li>
+                <span>01</span>
+                <div>
+                  <strong>Join</strong>
+                  <p>Create your learner account.</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <strong>Contribute</strong>
+                  <p>Ask, answer, write, and comment.</p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <strong>Learn together</strong>
+                  <p>Discover helpful ideas from the community.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <section className="tb-cta-section">
+          <div className="tb-home-container">
+            <div className="tb-cta-band">
+              <div>
+                <h2>Got a question stuck in your head?</h2>
+                <p>
+                  Ask it here. Someone has probably been through it already.
+                </p>
+              </div>
+              <Link to="/user-LoginRegister" className="tb-cta-btn">
+                Create a free account
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 export default HomePage;

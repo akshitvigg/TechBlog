@@ -2,7 +2,7 @@ import {Button, Modal} from 'react-bootstrap';
 import {ErrorMessage} from "@hookform/error-message";
 import {useForm} from "react-hook-form";
 import {useEffect, useState} from "react";
-import {FaEdit, FaPlus,FaTimes} from "react-icons/fa";
+import {FaPlus,FaTimes} from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
 import ReactLoading from 'react-loading';
@@ -17,12 +17,10 @@ const ManageCategories = () => {
     const handleShow = () => setShow(true);
 
     function handleForm(data) {
-        console.log(data);
         let {category} = data
-        axios.post("http://localhost:3300/add-category",{
+        axios.post("/add-category",{
             category
         }).then(res=>{
-            console.log(res.data);
             if(res.data==="inserted"){
                 reset();
                 Swal.fire({
@@ -33,15 +31,21 @@ const ManageCategories = () => {
                     timer: 1500
                 })
                 viewCategories()
+                handleClose()
+            } else {
+                Swal.fire({icon: "error", title: res.data === "exists" ? "Category already exists" : "Could not add category"});
             }
-        })
+        }).catch(() => Swal.fire({icon: "error", title: "Could not add category", text: "Please try again."}))
 
     }
     let viewCategories = ()=>{
-        axios.get("http://localhost:3300/view-categories").then(res=>{
-            console.log(res.data)
+        setStatus(true)
+        axios.get("/view-categories").then(res=>{
             setStatus(false)
-            setCategries(res.data);
+            setCategries(Array.isArray(res.data) ? res.data : []);
+        }).catch(() => {
+            setStatus(false)
+            Swal.fire({icon: "error", title: "Could not load categories", text: "Check that the server is running."})
         })
     }
     useEffect(() => {
@@ -58,12 +62,17 @@ const ManageCategories = () => {
             confirmButtonText: 'Yes, Delete it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.get("http://localhost:3300/del-category/"+id).then(res=>{
-                    console.log(res.data)
+                axios.delete("/del-category/"+id).then(res=>{
                     if(res.data ==="deleted"){
                         viewCategories()
+                    } else if (res.data === "in use") {
+                        Swal.fire({icon: "warning", title: "Category is in use", text: "Move or remove its questions and blogs before deleting it."})
                     }
-                })
+                }).catch(error => Swal.fire({
+                    icon: "error",
+                    title: "Could not delete category",
+                    text: error.response?.data || "Please try again."
+                }))
             }
         })
 
@@ -85,9 +94,9 @@ const ManageCategories = () => {
                             <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading>
                             :
                             categories.length > 0 ?
-                                <table className={"table table-dark"}>
+                                <table className={"table table-hover align-middle"}>
                                     <thead>
-                                    <tr className={"text-center"}>
+                                    <tr className={"text-center table-light"}>
                                         <th>Sr. No.</th>
                                         <th>Category Name</th>
                                         <th>Action</th>
@@ -110,7 +119,11 @@ const ManageCategories = () => {
                                     }
                                     </tbody>
                                 </table> :
-                                <p className={"alert alert-danger"}>No data found</p>
+                                <div className="tb-empty-state">
+                                    <h4>No categories yet</h4>
+                                    <p>Add categories so users can organize questions and blogs.</p>
+                                    <button className="btn btn-3" type="button" onClick={handleShow}><FaPlus/> Add a category</button>
+                                </div>
                     }
                     <Modal show={show} onHide={handleClose}>
                         <Modal.Header closeButton>

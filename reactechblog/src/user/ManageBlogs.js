@@ -17,7 +17,7 @@ const ManageBlogs = () => {
     const handleShow = () => setShow(true);
     let {register, handleSubmit, reset, formState: {errors}} = useForm()
     useEffect(() => {
-        axios.get("http://localhost:3300/view-categories").then(res => {
+        axios.get("/view-categories").then(res => {
             console.log(res.data);
             setCategoey(res.data);
         })
@@ -28,7 +28,7 @@ const ManageBlogs = () => {
         console.log(data);
         let {category, description, title} = data;
         let new_descp = `<pre>${description}</pre>`;
-        axios.post("http://localhost:3300/add-blog", {
+        axios.post("/add-blog", {
             category: category, message: new_descp, title: title
         }).then(res => {
             // console.log(res.data);
@@ -43,7 +43,7 @@ const ManageBlogs = () => {
     }
 
     function viewBlogs() {
-        axios.get("http://localhost:3300/view-my-blogs").then(res => {
+        axios.get("/view-my-blogs").then(res => {
             console.log(res.data);
             setBlogs(res.data)
             setStatus(false);
@@ -60,10 +60,13 @@ const ManageBlogs = () => {
             confirmButtonText: "Yes, delete it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.get("http://localhost:3300/del-blog/" + blogId).then(res => {
-                    console.log(res.data);
-                })
-                viewBlogs();
+                axios.delete("/del-blog/" + blogId).then(() => viewBlogs()).catch(error => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Could not delete blog",
+                        text: error.response?.data || "Please try again."
+                    });
+                });
             }
         });
     }
@@ -72,15 +75,15 @@ const ManageBlogs = () => {
         <div className="section page-banner-section user-login-banner">
             <div className="shape-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="726.5px" height="726.5px">
-                    <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                          stroke-linejoin="miter" opacity="0.302" fill="none"
+                    <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                          strokeLinejoin="miter" opacity="0.302" fill="none"
                           d="M28.14,285.269 L325.37,21.217 C358.860,-8.851 410.655,-5.808 440.723,28.14 L704.777,325.36 C734.846,358.859 731.802,410.654 697.979,440.722 L400.955,704.776 C367.132,734.844 315.338,731.802 285.269,697.978 L21.216,400.954 C-8.852,367.132 -5.808,315.337 28.14,285.269 Z"/>
                 </svg>
             </div>
             <div className="shape-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="972.5px" height="970.5px">
-                    <path fill-rule="evenodd" stroke="rgb(255, 255, 255)" stroke-width="1px" stroke-linecap="butt"
-                          stroke-linejoin="miter" fill="none"
+                    <path fillRule="evenodd" stroke="rgb(255, 255, 255)" strokeWidth="1px" strokeLinecap="butt"
+                          strokeLinejoin="miter" fill="none"
                           d="M38.245,381.102 L435.258,28.158 C480.467,-12.32 549.697,-7.964 589.888,37.244 L942.832,434.257 C983.23,479.466 978.955,548.697 933.746,588.888 L536.733,941.832 C491.524,982.23 422.293,977.955 382.103,932.745 L29.158,535.732 C-11.32,490.523 -6.963,421.293 38.245,381.102 Z"/>
                 </svg>
             </div>
@@ -109,7 +112,7 @@ const ManageBlogs = () => {
                                     <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading> :
                                     blogs.length > 0 ?
                                         <div className={"table-responsive"}>
-                                            <table className={"table table-dark mt-4"}>
+                                            <table className={"table mt-4"}>
                                                 <thead>
                                                 <tr className={"text-center"}>
                                                     <th>Sr. No.</th>

@@ -15,7 +15,7 @@ const ViewAnswers = () => {
     }, [])
 
     function view_answers() {
-        axios.get("http://localhost:3300/get-answers/" + qid).then(res => {
+        axios.get("/get-answers/" + qid).then(res => {
             console.log(res.data);
             setStatus(false)
             setAnswers(res.data);
@@ -23,7 +23,7 @@ const ViewAnswers = () => {
     }
 
     function upStatus(answer, status) {
-        axios.post("http://localhost:3300/update-ans-status", {
+        axios.post("/update-ans-status", {
             answer, status
         }).then(res => {
             if (res.data === "updated") {
@@ -44,7 +44,7 @@ const ViewAnswers = () => {
                                     <ReactLoading type={"spinningBubbles"} color={"coral"}></ReactLoading>
                                     :
                                     answers.length > 0 ?
-                                        <table className={"table table-dark"}>
+                                        <table className={"table"}>
                                             <thead>
                                             <tr className={"text-center"}>
                                                 <th>Sr. No.</th>
