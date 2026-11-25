@@ -13,8 +13,15 @@ var indexRouter = require("./routes/index");
 var app = express();
 var isProduction = process.env.NODE_ENV === "production";
 
-if (isProduction && (!process.env.MONGODB_URI || !process.env.SESSION_SECRET || !process.env.FRONTEND_URL)) {
-  throw new Error("MONGODB_URI, SESSION_SECRET, and FRONTEND_URL must be configured in production");
+if (
+  isProduction &&
+  (!process.env.MONGODB_URI ||
+    !process.env.SESSION_SECRET ||
+    !process.env.FRONTEND_URL)
+) {
+  throw new Error(
+    "MONGODB_URI, SESSION_SECRET, and FRONTEND_URL must be configured in production",
+  );
 }
 if (isProduction) {
   app.set("trust proxy", 1);
@@ -30,12 +37,8 @@ app.use(express.urlencoded({ extended: false, limit: "5mb" }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    credentials: true,
-  }),
-);
+app.use(cors());
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "techblog-development-secret",
