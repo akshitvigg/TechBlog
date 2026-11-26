@@ -6,6 +6,7 @@ import { excerpt } from "./textUtils";
 // detailsPath: "/blog-details/" (public) or "/user/blog-details-user/" (logged in)
 const BlogList = ({ detailsPath }) => {
   const [blogs, setBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [state, setState] = useState("loading");
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
@@ -20,14 +21,26 @@ const BlogList = ({ detailsPath }) => {
         setState("ok");
       })
       .catch(() => alive && setState("error"));
+    axios
+      .get("/view-categories")
+      .then((res) => {
+        if (!alive || !Array.isArray(res.data)) return;
+        setCategories(res.data.map((item) => item.cat_name).filter(Boolean));
+      })
+      .catch(() => {
+        if (alive) setCategories([]);
+      });
     return () => {
       alive = false;
     };
   }, []);
 
-  const categories = useMemo(
-    () => ["All", ...new Set(blogs.map((b) => b.cat_name).filter(Boolean))],
-    [blogs],
+  const categoryNames = useMemo(
+    () => ["All", ...new Set([
+      ...categories,
+      ...blogs.map((blog) => blog.cat_name).filter(Boolean),
+    ])],
+    [categories, blogs],
   );
 
   const visible = useMemo(() => {
@@ -64,13 +77,7 @@ const BlogList = ({ detailsPath }) => {
               <p>Check that the server is running, then refresh the page.</p>
             </div>
           )}
-          {state === "ok" && blogs.length === 0 && (
-            <div className="tb-empty-state">
-              <h4>No articles yet</h4>
-              <p>Be the first to publish one from your account.</p>
-            </div>
-          )}
-          {state === "ok" && blogs.length > 0 && (
+          {state === "ok" && (
             <>
               <div className="tb-filter-bar">
                 <div className="tb-filter-search">
@@ -83,7 +90,7 @@ const BlogList = ({ detailsPath }) => {
                   />
                 </div>
                 <div className="tb-chip-row">
-                  {categories.map((name) => (
+                  {categoryNames.map((name) => (
                     <button
                       key={name}
                       type="button"
@@ -104,6 +111,11 @@ const BlogList = ({ detailsPath }) => {
                       to={`${detailsPath}${blog.blog_id}`}
                     />
                   ))}
+                </div>
+              ) : blogs.length === 0 ? (
+                <div className="tb-empty-state">
+                  <h4>No articles yet</h4>
+                  <p>Be the first to publish one from your account.</p>
                 </div>
               ) : (
                 <div className="tb-empty-state">
